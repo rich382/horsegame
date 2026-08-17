@@ -1,0 +1,2 @@
+# Meshy Godot plugin drops imported GLBs here (`imported_models/<name>/<name>.glb`).
+# FarmYard picks up folders whose names contain truck / trailer.

@@ -2,6 +2,10 @@
 .godot/
 *.translation
 
+# Secrets
+.env
+.env.local
+
 # OS
 Thumbs.db
 desktop.ini

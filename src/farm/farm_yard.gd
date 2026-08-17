@@ -12,6 +12,9 @@ const TREE_OAK := "res://assets/models/nature/tree_oak.glb"
 const TREE_TALL := "res://assets/models/nature/tree_tall.glb"
 const TREE_DEFAULT := "res://assets/models/nature/tree_default.glb"
 const BUSH := "res://assets/models/nature/plant_bushLarge.glb"
+const TRUCK_GLB := "res://assets/models/farm/truck.glb"
+const TRAILER_GLB := "res://assets/models/farm/trailer.glb"
+const MESHY_DIR := "res://imported_models"
 
 const LOT := 160.0
 const ARENA_AT := Vector3(6.5, 0.03, 2.0)
@@ -195,6 +198,9 @@ func _wheel(at: Vector3) -> void:
 
 
 func _add_truck(origin: Vector3) -> void:
+	var mesh_path := _find_glb(TRUCK_GLB, ["truck", "pickup", "diesel"])
+	if _place_named_mesh("TruckCab", mesh_path, origin, 0.0, 1.0):
+		return
 	var paint := Color(0.85, 0.16, 0.10)
 	var dark := Color(0.12, 0.12, 0.13)
 	_box("TruckBed", origin + Vector3(0, 0.95, 0.75), Vector3(2.6, 0.7, 3.1), paint)
@@ -209,6 +215,9 @@ func _add_truck(origin: Vector3) -> void:
 
 
 func _add_trailer(origin: Vector3) -> void:
+	var mesh_path := _find_glb(TRAILER_GLB, ["trailer", "two-horse", "two horse"])
+	if _place_named_mesh("TrailerBox", mesh_path, origin, 0.0, 1.0):
+		return
 	var shell := Color(0.93, 0.90, 0.82)
 	var dark := Color(0.12, 0.12, 0.13)
 	_box("TrailerBox", origin + Vector3(0, 1.45, 0.25), Vector3(2.7, 2.3, 4.2), shell)
@@ -219,6 +228,51 @@ func _add_trailer(origin: Vector3) -> void:
 	_wheel(origin + Vector3(1.4, 0.42, 0.9))
 	_wheel(origin + Vector3(-1.4, 0.42, -0.7))
 	_wheel(origin + Vector3(1.4, 0.42, -0.7))
+
+
+func _find_glb(preferred: String, needles: PackedStringArray) -> String:
+	if ResourceLoader.exists(preferred):
+		return preferred
+	var dir := DirAccess.open(MESHY_DIR)
+	if dir == null:
+		return ""
+	for folder in dir.get_directories():
+		var lower := folder.to_lower()
+		var hit := false
+		for needle in needles:
+			if lower.contains(needle):
+				hit = true
+				break
+		if not hit:
+			continue
+		var folder_path := "%s/%s" % [MESHY_DIR, folder]
+		var named := "%s/%s.glb" % [folder_path, folder]
+		if ResourceLoader.exists(named):
+			return named
+		var inner := DirAccess.open(folder_path)
+		if inner == null:
+			continue
+		for fname in inner.get_files():
+			if fname.to_lower().ends_with(".glb"):
+				return "%s/%s" % [folder_path, fname]
+	return ""
+
+
+func _place_named_mesh(node_name: String, path: String, origin: Vector3, yaw: float, scale: float) -> bool:
+	if path == "" or not ResourceLoader.exists(path):
+		return false
+	var packed = load(path)
+	if packed == null or not (packed is PackedScene):
+		return false
+	var holder := Node3D.new()
+	holder.name = node_name
+	holder.position = origin
+	holder.rotation.y = yaw
+	holder.scale = Vector3.ONE * scale
+	var inst: Node = packed.instantiate()
+	holder.add_child(inst)
+	add_child(holder)
+	return true
 
 
 func _add_model(path: String, origin: Vector3, yaw: float = 0.0, scale: float = 1.0) -> void:

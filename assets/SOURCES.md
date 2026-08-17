@@ -7,6 +7,7 @@
 | `assets/textures/tex_*.jpg` | Generated for Livia's Stable | Project original | Tileable grass, arena footing, barn wood, roof. 1024². |
 | `assets/sprites/*.png` | Grok Imagine + `tools/key_sprites.py` | Project original | Painted H/J horse (4 coats), shedrow, hunter jump, fence, oak. |
 | `assets/models/farm/*.glb` | Modeled in Blender 5.2 (`tools/model_farm.py`) | Project original | 3D barn, jump, fence. Wood/roof textures from Imagine. |
+| `imported_models/**` | [Meshy](https://www.meshy.ai/) via official Godot plugin | Generated for this project | Truck/trailer (and later props) imported from Meshy. |
 | `assets/models/player/**` | Kay Lousberg KayKit Adventurers 2.0 | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Ranger mesh + extra_Rig walk/idle/tools. |
 
 Credit is not required for CC0. We keep the licenses next to the files.
