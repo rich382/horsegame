@@ -4,6 +4,7 @@ extends SceneTree
 
 const TestCalendarWrap := preload("res://tests/test_calendar_wrap.gd")
 const TestSaveMigrate := preload("res://tests/test_save_migrate.gd")
+const TestBootActions := preload("res://tests/test_boot_actions.gd")
 
 var _ran := false
 
@@ -16,6 +17,7 @@ func _process(_delta: float) -> bool:
 	var fails := 0
 	fails += TestCalendarWrap.run()
 	fails += TestSaveMigrate.run()
+	fails += TestBootActions.run()
 	if fails > 0:
 		push_error("TESTS FAILED: %d assertion(s)" % fails)
 		quit(1)

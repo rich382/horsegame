@@ -1,18 +1,15 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/boot/boot.gd" id="1_boot"]
-[ext_resource type="PackedScene" path="res://scenes/ui/clock_hud.tscn" id="2_clock"]
+[ext_resource type="Script" path="res://scenes/boot/orbit_camera.gd" id="2_cam"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="3_pause"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.36, 0.48, 0.32, 1)
 
 [sub_resource type="Environment" id="Environment_boot"]
 background_mode = 1
 background_color = Color(0.55, 0.68, 0.78, 1)
 ambient_light_source = 2
-ambient_light_color = Color(0.85, 0.88, 0.9, 1)
-ambient_light_energy = 0.55
+ambient_light_color = Color(0.88, 0.90, 0.92, 1)
+ambient_light_energy = 0.7
 
 [node name="Boot" type="Node3D"]
 script = ExtResource("1_boot")
@@ -21,51 +18,116 @@ script = ExtResource("1_boot")
 environment = SubResource("Environment_boot")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.766044, -0.55667, 0.321394, 0, 0.5, 0.866025, -0.642788, -0.663414, 0.383022, 6, 10, 8)
+transform = Transform3D(0.766044, -0.55667, 0.321394, 0, 0.5, 0.866025, -0.642788, -0.663414, 0.383022, 6, 12, 8)
 shadow_enabled = true
-light_energy = 1.15
+light_energy = 1.2
 
-[node name="Ground" type="CSGBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
-use_collision = true
-size = Vector3(24, 0.2, 24)
-material = SubResource("StandardMaterial3D_ground")
+[node name="Yard" type="Node3D" parent="."]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(0.819152, -0.286788, 0.496732, 0, 0.866025, 0.5, -0.573577, -0.409576, 0.709406, 8, 8, 11)
 current = true
 fov = 50.0
+script = ExtResource("2_cam")
 
 [node name="HUD" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="TitleBar" type="ColorRect" parent="HUD"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 92.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.12, 0.16, 0.14, 0.72)
 
 [node name="Title" type="Label" parent="HUD"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -280.0
-offset_top = 36.0
-offset_right = 280.0
-offset_bottom = 100.0
-theme_override_colors/font_color = Color(0.91, 0.86, 0.74, 1)
-theme_override_font_sizes/font_size = 42
+offset_left = 28.0
+offset_top = 10.0
+offset_right = 640.0
+offset_bottom = 58.0
+theme_override_colors/font_color = Color(0.95, 0.90, 0.76, 1)
+theme_override_font_sizes/font_size = 36
 text = "Livia's Stable"
-horizontal_alignment = 1
 
-[node name="Hint" type="Label" parent="HUD"]
+[node name="Clock" type="Label" parent="HUD"]
+offset_left = 28.0
+offset_top = 54.0
+offset_right = 900.0
+offset_bottom = 84.0
+theme_override_colors/font_color = Color(0.90, 0.86, 0.74, 1)
+theme_override_font_sizes/font_size = 20
+text = "Year 1  Spring  Week 1  Mon  Morning"
+
+[node name="Status" type="Label" parent="HUD"]
+offset_left = 28.0
+offset_top = 100.0
+offset_right = 980.0
+offset_bottom = 128.0
+theme_override_colors/font_color = Color(0.93, 0.93, 0.88, 1)
+theme_override_font_sizes/font_size = 16
+text = "Cash $10000"
+
+[node name="Toast" type="Label" parent="HUD"]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -220.0
-offset_top = -48.0
-offset_right = 220.0
-offset_bottom = -16.0
-theme_override_colors/font_color = Color(0.85, 0.82, 0.74, 0.85)
-theme_override_font_sizes/font_size = 16
-text = "Esc — pause   Sleep advances a day"
+offset_left = -420.0
+offset_top = -148.0
+offset_right = 420.0
+offset_bottom = -108.0
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+text = ""
 horizontal_alignment = 1
 
-[node name="ClockHUD" parent="." instance=ExtResource("2_clock")]
+[node name="Help" type="Label" parent="HUD"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -520.0
+offset_top = -88.0
+offset_right = -24.0
+offset_bottom = -16.0
+theme_override_colors/font_color = Color(0.90, 0.88, 0.80, 0.9)
+theme_override_font_sizes/font_size = 15
+text = "Left-drag: orbit    Wheel: zoom
+N next phase    M sleep    P pause
+(Esc stops Play inside the Godot editor)"
+horizontal_alignment = 2
+
+[node name="Actions" type="HBoxContainer" parent="HUD"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -80.0
+offset_right = 820.0
+offset_bottom = -24.0
+theme_override_constants/separation = 12
+
+[node name="NextPhase" type="Button" parent="HUD/Actions"]
+custom_minimum_size = Vector2(160, 48)
+text = "Next Phase (N)"
+
+[node name="Sleep" type="Button" parent="HUD/Actions"]
+custom_minimum_size = Vector2(200, 48)
+text = "Sleep until morning (M)"
+
+[node name="Save" type="Button" parent="HUD/Actions"]
+custom_minimum_size = Vector2(120, 48)
+text = "Save (F5)"
+
+[node name="Pause" type="Button" parent="HUD/Actions"]
+custom_minimum_size = Vector2(120, 48)
+text = "Pause (P)"
 
 [node name="PauseMenu" parent="." instance=ExtResource("3_pause")]
+
+[connection signal="pressed" from="HUD/Actions/NextPhase" to="." method="_on_next_phase"]
+[connection signal="pressed" from="HUD/Actions/Sleep" to="." method="_on_sleep"]
+[connection signal="pressed" from="HUD/Actions/Save" to="." method="_on_save"]
+[connection signal="pressed" from="HUD/Actions/Pause" to="." method="_on_pause_pressed"]

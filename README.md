@@ -33,7 +33,15 @@ Headless smoke:
 godot --headless --path . --quit-after 2
 ```
 
-Esc opens the pause menu (Resume, Sleep until morning, Save, Quit).
+Press **Play (F5)** in Godot. You should see a barn, an arena, and the date.
+
+- **Left-drag** to orbit, **mouse wheel** to zoom
+- **Next Phase** / **N** advances Morning → Afternoon → Evening
+- **Sleep** / **M** skips to the next morning
+- **Save** / **F5** writes slot 1
+- **Pause** / **P** (do not use Esc inside the editor — Esc stops Play)
+
+The farm, horses, and Ashford show come in later PRs. The clock and save already work.
 
 ## Vertical slice
 
