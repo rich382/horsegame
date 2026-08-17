@@ -8,6 +8,11 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 - Boot scene is playable: orbit camera, visible barn/arena, on-screen Next Phase / Sleep / Save / Pause. Esc no longer the only control (the editor eats Esc).
 
+### Changed
+
+- Farm yard uses Kenney CC0 trees/fence plus painted grass, footing, barn wood, and roof.
+- Starter horse is the Quaternius CC0 farm horse, tinted by coat. New-game name + coat picker.
+
 ### Added
 
 - Approved design for **Livia's Stable** (`docs/DESIGN.md`): Hunter/Jumper farm + show career, Godot 4.7, management sim + course theater.

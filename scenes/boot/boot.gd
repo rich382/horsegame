@@ -7,17 +7,22 @@ extends Node3D
 @onready var _toast_label: Label = $HUD/Toast
 @onready var _status_label: Label = $HUD/Status
 @onready var _yard: Node3D = $Yard
+@onready var _horse: Node3D = $HorsePresenter
+@onready var _new_game: CanvasLayer = $NewGame
 
 
 func _ready() -> void:
-	_build_yard()
+	if _yard.has_method("build"):
+		_yard.build()
+	_spawn_horse()
 	var bus := get_node("/root/EventBus")
 	if not bus.toast.is_connected(_on_toast):
 		bus.toast.connect(_on_toast)
 	if not bus.clock_changed.is_connected(_refresh_clock):
 		bus.clock_changed.connect(_refresh_clock)
+	_new_game.confirmed.connect(_on_identity)
 	_refresh_clock()
-	_on_toast("Left-drag to look around. Buttons below change the day.")
+	_on_toast("Name your horse, pick a coat, then look around the yard.")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -71,29 +76,32 @@ func _refresh_clock() -> void:
 		return
 	var clock = gs.data.clock
 	_clock_label.text = clock.hud_text()
-	_status_label.text = "Cash $%d   ·   Click Next Phase or Sleep to play the clock." % int(gs.data.player.cash)
+	var horse_name := "—"
+	if gs.data.horses.size() > 0:
+		horse_name = String(gs.data.horses[0].name)
+	_status_label.text = "%s   ·   Cash $%d   ·   Next Phase / Sleep still run the clock." % [
+		horse_name, int(gs.data.player.cash)
+	]
 
 
-func _build_yard() -> void:
-	for child in _yard.get_children():
-		child.queue_free()
-	_add_box(_yard, Vector3(28, 0.16, 28), Vector3(0, -0.08, 0), Color(0.38, 0.50, 0.32))
-	_add_box(_yard, Vector3(10, 3.2, 4.2), Vector3(-6.5, 1.6, -4.5), Color(0.45, 0.32, 0.22))
-	_add_box(_yard, Vector3(10.4, 0.25, 4.6), Vector3(-6.5, 3.3, -4.5), Color(0.35, 0.22, 0.16))
-	_add_box(_yard, Vector3(12, 0.08, 18), Vector3(5.5, 0.04, 2.0), Color(0.62, 0.58, 0.42))
-	_add_box(_yard, Vector3(0.18, 1.1, 0.18), Vector3(1.2, 0.55, -4.5), Color(0.82, 0.74, 0.52))
-	_add_box(_yard, Vector3(0.18, 1.1, 0.18), Vector3(9.8, 0.55, -4.5), Color(0.82, 0.74, 0.52))
-	_add_box(_yard, Vector3(8.8, 0.12, 0.12), Vector3(5.5, 1.05, -4.5), Color(0.72, 0.58, 0.32))
-	_add_box(_yard, Vector3(8.8, 0.12, 0.12), Vector3(5.5, 0.72, -4.5), Color(0.72, 0.58, 0.32))
+func _spawn_horse() -> void:
+	var gs := get_node("/root/GameState")
+	var horse = null
+	if gs.data and gs.data.horses.size() > 0:
+		horse = gs.data.horses[0]
+	_horse.position = Vector3(-8.0, 0.0, 2.5)
+	_horse.rotation.y = 0.7
+	if _horse.has_method("setup"):
+		_horse.setup(horse)
 
 
-func _add_box(parent: Node3D, size: Vector3, origin: Vector3, color: Color) -> void:
-	var mesh := BoxMesh.new()
-	mesh.size = size
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = color
-	mesh.material = mat
-	var inst := MeshInstance3D.new()
-	inst.mesh = mesh
-	inst.position = origin
-	parent.add_child(inst)
+func _on_identity(horse_name: String, coat: int) -> void:
+	var gs := get_node("/root/GameState")
+	if gs.data == null or gs.data.horses.is_empty():
+		return
+	var HorseFactoryScript = load("res://src/horse/horse_factory.gd")
+	HorseFactoryScript.apply_player_identity(gs.data.horses[0], horse_name, coat)
+	if _horse.has_method("setup"):
+		_horse.setup(gs.data.horses[0])
+	_refresh_clock()
+	_on_toast("%s is on the farm." % gs.data.horses[0].name)

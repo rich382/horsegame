@@ -33,7 +33,7 @@ Headless smoke:
 godot --headless --path . --quit-after 2
 ```
 
-Press **Play (F5)** in Godot. You should see a barn, an arena, and the date.
+Press **Play (F5)** in Godot. Name the horse, pick a coat, then look around the farm (trees, barn, arena, a real horse).
 
 - **Left-drag** to orbit, **mouse wheel** to zoom
 - **Next Phase** / **N** advances Morning → Afternoon → Evening

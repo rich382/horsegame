@@ -22,9 +22,6 @@ static func run() -> int:
 	if start.abs_day() != 0:
 		push_error("calendar wrap: new_game abs_day=%d want 0" % start.abs_day())
 		fails += 1
-	if not gs.data.horses.is_empty():
-		push_error("calendar wrap: PR 2 test must have no horses")
-		fails += 1
 
 	for _i in 112:
 		clock.sleep_until_morning()

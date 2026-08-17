@@ -1,0 +1,55 @@
+class_name HorseState
+extends Resource
+
+@export var uid: String = ""
+@export var def_id: StringName = &""
+@export var name: String = "Bayberry"
+@export var barn_name: String = "Bay"
+@export var breed: int = 1
+@export var sex: int = 2
+@export var height_hands: float = 16.2
+@export var age_months: int = 120
+@export var coat: int = 0
+@export var markings: PackedStringArray = ["star"]
+@export var papers: bool = true
+@export var registry_flavor: String = ""
+@export var scope: float = 56.0
+@export var carefulness: float = 62.0
+@export var style: float = 58.0
+@export var rideability: float = 64.0
+@export var bravery: float = 55.0
+@export var speed: float = 48.0
+@export var stride: float = 52.0
+@export var lead_changes: float = 50.0
+@export var movement: float = 54.0
+@export var conformation: float = 60.0
+@export var temperament: int = 0
+@export var fitness: float = 62.0
+@export var soundness: float = 88.0
+@export var energy: float = 80.0
+@export var hunger: float = 85.0
+@export var happiness: float = 70.0
+@export var cleanliness: float = 65.0
+@export var weight: float = 5.2
+@export var hoof: float = 80.0
+@export var turnout_score: float = 40.0
+@export var flatwork: float = 55.0
+@export var gymnastics: float = 48.0
+@export var hunter_schooling: float = 40.0
+@export var jumper_schooling: float = 42.0
+@export var schooled_height_m: float = 0.85
+@export var shows_at_height_mm: Dictionary = {}
+@export var overwork: float = 0.0
+@export var phase_busy: bool = false
+@export var fed_morning: bool = false
+@export var fed_evening: bool = false
+@export var picked_stall_today: bool = false
+@export var turned_out: bool = false
+@export var schooled_today: bool = false
+@export var last_farrier_abs_day: int = -4
+@export var dull_mornings: int = 0
+@export var stall_id: StringName = &"stall_0"
+@export var tack: Dictionary = {}
+@export var injuries: Array = []
+@export var genome: HorseGenome
+@export var records: Array = []

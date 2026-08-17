@@ -1,8 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/boot/boot.gd" id="1_boot"]
 [ext_resource type="Script" path="res://scenes/boot/orbit_camera.gd" id="2_cam"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="3_pause"]
+[ext_resource type="Script" path="res://src/farm/farm_yard.gd" id="4_yard"]
+[ext_resource type="PackedScene" path="res://scenes/horse/horse_presenter.tscn" id="5_horse"]
+[ext_resource type="PackedScene" path="res://scenes/ui/new_game.tscn" id="6_new"]
 
 [sub_resource type="Environment" id="Environment_boot"]
 background_mode = 1
@@ -23,6 +26,10 @@ shadow_enabled = true
 light_energy = 1.2
 
 [node name="Yard" type="Node3D" parent="."]
+script = ExtResource("4_yard")
+
+[node name="HorsePresenter" parent="." instance=ExtResource("5_horse")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 2.5)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 current = true
@@ -126,6 +133,8 @@ custom_minimum_size = Vector2(120, 48)
 text = "Pause (P)"
 
 [node name="PauseMenu" parent="." instance=ExtResource("3_pause")]
+
+[node name="NewGame" parent="." instance=ExtResource("6_new")]
 
 [connection signal="pressed" from="HUD/Actions/NextPhase" to="." method="_on_next_phase"]
 [connection signal="pressed" from="HUD/Actions/Sleep" to="." method="_on_sleep"]

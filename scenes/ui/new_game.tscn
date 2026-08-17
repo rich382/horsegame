@@ -1,0 +1,69 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/new_game.gd" id="1_ng"]
+
+[node name="NewGame" type="CanvasLayer"]
+layer = 30
+script = ExtResource("1_ng")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.07, 0.06, 0.55)
+
+[node name="Panel" type="VBoxContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -240.0
+offset_top = -190.0
+offset_right = 240.0
+offset_bottom = 190.0
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Panel"]
+theme_override_font_sizes/font_size = 28
+text = "Name your horse"
+horizontal_alignment = 1
+
+[node name="NameEdit" type="LineEdit" parent="Panel"]
+custom_minimum_size = Vector2(0, 40)
+placeholder_text = "Bayberry"
+alignment = 1
+
+[node name="CoatHint" type="Label" parent="Panel"]
+text = "Coat"
+horizontal_alignment = 1
+
+[node name="Coats" type="HBoxContainer" parent="Panel"]
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Bay" type="Button" parent="Panel/Coats"]
+custom_minimum_size = Vector2(100, 40)
+text = "Bay"
+
+[node name="Chestnut" type="Button" parent="Panel/Coats"]
+custom_minimum_size = Vector2(100, 40)
+text = "Chestnut"
+
+[node name="Grey" type="Button" parent="Panel/Coats"]
+custom_minimum_size = Vector2(100, 40)
+text = "Grey"
+
+[node name="Black" type="Button" parent="Panel/Coats"]
+custom_minimum_size = Vector2(100, 40)
+text = "Black"
+
+[node name="Start" type="Button" parent="Panel"]
+custom_minimum_size = Vector2(0, 48)
+text = "Walk to the barn"
+
+[connection signal="pressed" from="Panel/Coats/Bay" to="." method="_on_bay"]
+[connection signal="pressed" from="Panel/Coats/Chestnut" to="." method="_on_chestnut"]
+[connection signal="pressed" from="Panel/Coats/Grey" to="." method="_on_grey"]
+[connection signal="pressed" from="Panel/Coats/Black" to="." method="_on_black"]
+[connection signal="pressed" from="Panel/Start" to="." method="_on_start"]

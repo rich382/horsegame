@@ -4,6 +4,7 @@ extends Node
 const GameConfigScript := preload("res://src/core/game_config.gd")
 const GameStateDataScript := preload("res://src/core/game_state_data.gd")
 const RngScript := preload("res://src/core/rng.gd")
+const HorseFactoryScript := preload("res://src/horse/horse_factory.gd")
 
 var data
 var sim_rng
@@ -27,6 +28,8 @@ func new_game(config) -> void:
 	data.rng_call_count = 0
 	sim_rng = RngScript.new()
 	sim_rng.reset(data.seed, 0)
+	var horse = HorseFactoryScript.instantiate(HorseFactoryScript.starter_def(), sim_rng)
+	data.horses = [horse]
 	_bus().clock_changed.emit()
 
 
