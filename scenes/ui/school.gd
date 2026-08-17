@@ -24,8 +24,11 @@ func _refresh_hint() -> void:
 	if gs.data == null or gs.data.clock == null:
 		_hint.text = ""
 		return
+	if int(gs.data.clock.phase) == Enums.Phase.EVENING:
+		_hint.text = "Schooling is an afternoon job. Sleep, then try tomorrow."
+		return
 	if int(gs.data.clock.phase) != Enums.Phase.AFTERNOON:
-		_hint.text = "Schooling is an afternoon job."
+		_hint.text = "It's morning. Pick a trip and we'll school this afternoon."
 		return
 	if gs.data.horses.is_empty():
 		_hint.text = "No horse."

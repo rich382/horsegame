@@ -7,6 +7,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 ### Fixed
 
 - School shows Flat / Poles / Gymnastic as soon as you click it (lead no longer swallows the picker).
+- Picking a school trip in the morning advances to afternoon and starts the work. A click always applies the session, then the horse walks the trip.
 - Boot scene is playable: orbit camera, visible barn/arena, on-screen Next Phase / Sleep / Save / Pause. Esc no longer the only control (the editor eats Esc).
 
 ### Added

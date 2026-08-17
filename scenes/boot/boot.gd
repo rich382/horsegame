@@ -245,54 +245,29 @@ func _on_gym_school() -> void:
 
 
 func _on_school_picked(kind: int) -> void:
-	_hide_school_choices()
-	var gs := get_node("/root/GameState")
-	var why := Training.block_reason(_horse_state(), gs.data)
-	if why != "":
-		_on_toast(why)
-		return
 	if _session:
 		_on_toast("Still in the ring.")
 		return
+	var gs := get_node("/root/GameState")
+	if gs.data and gs.data.clock and int(gs.data.clock.phase) == Enums.Phase.MORNING:
+		get_node("/root/GameClock").advance_phase()
+		_on_toast("Afternoon. Going to the ring.")
+	var why := Training.block_reason(_horse_state(), gs.data)
+	if why != "":
+		_on_toast(why)
+		if _school:
+			_school.open()
+		if _school_work:
+			_school_work.visible = true
+		return
+	_hide_school_choices()
+	var msg := Training.apply_session(_horse_state(), kind, gs.data)
+	_on_toast(msg)
+	_refresh_sheet()
 	_session = true
-	_on_toast("Taking %s to the ring for %s." % [_horse_state().name, Training.kind_label(kind)])
-	_lead_to_arena(func() -> void:
-		var horse = _horse_state()
-		if horse:
-			horse.at_arena = true
-			horse.turned_out = false
-		_on_toast("Working %s with %s." % [Training.kind_label(kind), horse.name if horse else "them"])
-		_run_school_path(_school_steps(kind), 0, func() -> void:
-			_on_toast(Training.apply_session(_horse_state(), kind, gs.data))
-			_session = false
-			_refresh_clock()
-		)
-	)
-
-
-func _lead_to_arena(done: Callable) -> void:
-	var finish := func() -> void:
-		if done.is_valid():
-			done.call()
-	if _player == null or not _player.has_method("walk_to"):
-		if _horse.has_method("walk_to"):
-			_horse.walk_to(ARENA_HORSE, finish)
-		else:
-			_horse.position = ARENA_HORSE
-			finish.call()
-		return
-	if _player.is_busy():
-		if _horse.has_method("walk_to"):
-			_horse.walk_to(ARENA_HORSE, finish)
-		else:
-			finish.call()
-		return
-	_player.walk_to(_beside_horse(), func() -> void:
-		if _horse.has_method("walk_to"):
-			_horse.walk_to(ARENA_HORSE)
-		else:
-			_horse.position = ARENA_HORSE
-		_player.walk_to(ARENA_HORSE + Vector3(1.5, 0.0, 0.5), finish)
+	_run_school_path(_school_steps(kind), 0, func() -> void:
+		_session = false
+		_refresh_clock()
 	)
 
 
@@ -338,9 +313,8 @@ func _run_school_path(steps: Array, i: int, done: Callable) -> void:
 			next.call()
 		return
 	if _horse.has_method("walk_to"):
-		if not _horse.walk_to(dest, next):
-			next.call()
-		return
+		if _horse.walk_to(dest, next):
+			return
 	_horse.position = dest
 	next.call()
 

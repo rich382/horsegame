@@ -59,6 +59,18 @@ static func run() -> int:
 			if school.get_node_or_null("Center/Card/Margin/VBox/Flat") == null:
 				push_error("boot actions: school picker Flat missing")
 				fails += 1
+		if boot.has_method("_on_school_picked"):
+			if gs.data.clock.phase != Enums.Phase.MORNING:
+				push_error("boot actions: expected morning before school pick")
+				fails += 1
+			else:
+				boot._on_school_picked(Enums.TrainingKind.FLAT)
+				if gs.data.clock.phase != Enums.Phase.AFTERNOON:
+					push_error("boot actions: morning school pick should become afternoon")
+					fails += 1
+				if gs.data.horses.size() > 0 and not bool(gs.data.horses[0].schooled_today):
+					push_error("boot actions: school pick did not apply a session")
+					fails += 1
 		if boot.get_node_or_null("Camera3D") == null:
 			push_error("boot actions: camera missing")
 			fails += 1
