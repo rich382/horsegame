@@ -7,6 +7,7 @@ const TestSaveMigrate := preload("res://tests/test_save_migrate.gd")
 const TestBootActions := preload("res://tests/test_boot_actions.gd")
 const TestHorseFactory := preload("res://tests/test_horse_factory.gd")
 const TestCareSystem := preload("res://tests/test_care_system.gd")
+const TestPlayerAvatar := preload("res://tests/test_player_avatar.gd")
 
 var _ran := false
 
@@ -22,6 +23,7 @@ func _process(_delta: float) -> bool:
 	fails += TestBootActions.run()
 	fails += TestHorseFactory.run()
 	fails += TestCareSystem.run()
+	fails += TestPlayerAvatar.run()
 	if fails > 0:
 		push_error("TESTS FAILED: %d assertion(s)" % fails)
 		quit(1)

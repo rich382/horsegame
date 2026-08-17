@@ -15,6 +15,7 @@ const PADDOCK_POS := Vector3(-10.5, 0.0, 3.6)
 @onready var _new_game: CanvasLayer = $NewGame
 @onready var _sheet = $HUD/HorseSheet
 @onready var _cam: Camera3D = $Camera3D
+@onready var _player: Node3D = $PlayerAvatar
 
 
 func _ready() -> void:
@@ -31,7 +32,7 @@ func _ready() -> void:
 	if _cam.has_signal("yard_clicked"):
 		_cam.yard_clicked.connect(_on_yard_clicked)
 	_refresh_clock()
-	_on_toast("Name your horse, then Feed / Pick / In-Out / Groom.")
+	_on_toast("Name your horse. You walk over and do the chores.")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -145,25 +146,51 @@ func _place_horse() -> void:
 
 
 func _on_feed() -> void:
-	var gs := get_node("/root/GameState")
-	_on_toast(Care.feed(gs.data, _horse_state()))
-	_refresh_clock()
+	_send_to_chore(_beside_horse(), func() -> void:
+		var gs := get_node("/root/GameState")
+		_on_toast(Care.feed(gs.data, _horse_state()))
+		_refresh_clock()
+	)
 
 
 func _on_pick() -> void:
-	var gs := get_node("/root/GameState")
-	_on_toast(Care.pick_stall(gs.data, _horse_state()))
-	_refresh_clock()
+	_send_to_chore(STALL_POS + Vector3(1.4, 0, 0.8), func() -> void:
+		var gs := get_node("/root/GameState")
+		_on_toast(Care.pick_stall(gs.data, _horse_state()))
+		_refresh_clock()
+	)
 
 
 func _on_turnout() -> void:
-	_on_toast(Care.toggle_turnout(_horse_state()))
-	_refresh_clock()
+	_send_to_chore(_beside_horse(), func() -> void:
+		_on_toast(Care.toggle_turnout(_horse_state()))
+		_refresh_clock()
+	)
 
 
 func _on_groom() -> void:
-	_on_toast(Care.groom(_horse_state()))
-	_refresh_clock()
+	_send_to_chore(_beside_horse(), func() -> void:
+		_on_toast(Care.groom(_horse_state()))
+		_refresh_clock()
+	)
+
+
+func _beside_horse() -> Vector3:
+	return _horse.global_position + Vector3(1.3, 0, 0.4)
+
+
+func _send_to_chore(dest: Vector3, done: Callable) -> void:
+	if _player == null or not _player.has_method("walk_and_do"):
+		done.call()
+		return
+	if _player.is_busy():
+		_on_toast("Still working.")
+		return
+	var clip := ""
+	if _player.has_method("pick_action_clip"):
+		clip = String(_player.pick_action_clip())
+	if not _player.walk_and_do(dest, clip, done):
+		_on_toast("Still walking.")
 
 
 func _on_yard_clicked(screen_pos: Vector2) -> void:
@@ -179,3 +206,9 @@ func _on_yard_clicked(screen_pos: Vector2) -> void:
 		get_node("/root/EventBus").horse_selected.emit(String(_horse_state().uid) if _horse_state() else "")
 		_refresh_sheet()
 		_on_toast("That's %s." % _horse_state().name)
+		if _player and _player.has_method("walk_to"):
+			_player.walk_to(_beside_horse())
+		return
+	var at: Vector3 = hit.get("position", Vector3.ZERO)
+	if _player and _player.has_method("walk_to"):
+		_player.walk_to(at)

@@ -47,6 +47,15 @@ func _add_ground() -> void:
 	inst.mesh = mesh
 	inst.material_override = _mat(TEX_GRASS, Vector3(12, 12, 1))
 	add_child(inst)
+	var body := StaticBody3D.new()
+	body.name = "GroundPick"
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(48, 0.2, 48)
+	col.shape = box
+	col.position.y = -0.1
+	body.add_child(col)
+	add_child(body)
 
 
 func _add_arena() -> void:
