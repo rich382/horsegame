@@ -53,6 +53,17 @@ static func run() -> int:
 	if not Care.is_dull(h):
 		push_error("care: expected dull after two skipped mornings")
 		fails += 1
+	h.at_arena = true
+	h.turned_out = false
+	var out_msg := Care.toggle_turnout(h)
+	if bool(h.at_arena) or not bool(h.turned_out):
+		push_error("care: arena In/Out should turnout (%s)" % out_msg)
+		fails += 1
+	h.at_arena = true
+	Care.apply_night(gs.data)
+	if bool(h.at_arena):
+		push_error("care: night should bring them in from the arena")
+		fails += 1
 	if fails == 0:
 		print("test_care_system: ok")
 	return fails

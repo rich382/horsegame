@@ -11,7 +11,11 @@ func refresh(data, horse) -> void:
 		_body.text = "Click a horse."
 		return
 	var age_y := int(horse.age_months) / 12
-	var loc := "out" if bool(horse.turned_out) else "in"
+	var loc := "in"
+	if bool(horse.at_arena):
+		loc = "in the arena"
+	elif bool(horse.turned_out):
+		loc = "out"
 	var lines: PackedStringArray = [
 		"%s  ·  %s" % [horse.name, loc],
 		"%d yo  ·  %.1f hh  ·  %s" % [age_y, horse.height_hands, _coat_name(int(horse.coat))],

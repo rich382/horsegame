@@ -61,6 +61,7 @@ static func apply_night(data) -> void:
 		h.fed_evening = false
 		h.picked_stall_today = false
 		h.turned_out = false
+		h.at_arena = false
 
 
 static func feed(data, horse) -> String:
@@ -119,6 +120,12 @@ static func pick_stall(data, horse) -> String:
 static func toggle_turnout(horse) -> String:
 	if horse == null:
 		return "No horse."
+	if bool(horse.at_arena):
+		horse.at_arena = false
+		horse.turned_out = true
+		horse.happiness = minf(100.0, float(horse.happiness) + 6.0)
+		horse.turnout_score = minf(100.0, float(horse.turnout_score) + 4.0)
+		return "%s is out." % horse.name
 	horse.turned_out = not bool(horse.turned_out)
 	if horse.turned_out:
 		horse.happiness = minf(100.0, float(horse.happiness) + 6.0)
@@ -184,6 +191,8 @@ static func trainer_line(data, horse) -> String:
 		return "You can smell that stall from the aisle."
 	if float(horse.cleanliness) < 40.0:
 		return "Mud to the elbows. Get a brush."
+	if bool(horse.at_arena):
+		return "In the school. One honest trip, then let them be."
 	if horse.turned_out:
 		return "Happy to be out. Don't leave them out all night without a rug thought — later."
 	return "Honest type. Keep the routine and they'll stay that way."

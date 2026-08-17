@@ -33,7 +33,7 @@ func _refresh_hint() -> void:
 	if bool(h.schooled_today):
 		_hint.text = "%s already worked today." % h.name
 	else:
-		_hint.text = "One trip. Don't drill them into the ground."
+		_hint.text = "They're in the ring. One trip — don't drill them."
 
 
 func _pick(kind: int) -> void:

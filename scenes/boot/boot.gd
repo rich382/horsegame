@@ -7,7 +7,9 @@ const Training := preload("res://src/training/training_system.gd")
 const STALL_POS := Vector3(-8.2, 0.0, -4.0)
 const PADDOCK_POS := Vector3(-10.5, 0.0, 3.6)
 const ARENA_POS := Vector3(6.5, 0.0, 2.0)
+const ARENA_HORSE := Vector3(5.4, 0.0, 1.6)
 const SHOP_POS := Vector3(-6.6, 0.0, -3.4)
+const Enums := preload("res://src/core/enums.gd")
 
 @onready var _pause: CanvasLayer = $PauseMenu
 @onready var _clock_label: Label = $HUD/Clock
@@ -21,6 +23,8 @@ const SHOP_POS := Vector3(-6.6, 0.0, -3.4)
 @onready var _player: Node3D = $PlayerAvatar
 @onready var _shop: CanvasLayer = $Shop
 @onready var _school: CanvasLayer = $School
+
+var _session := false
 
 
 func _ready() -> void:
@@ -149,7 +153,12 @@ func _place_horse() -> void:
 	var h = _horse_state()
 	if h == null:
 		return
-	if bool(h.turned_out):
+	if _horse.has_method("is_busy") and _horse.is_busy():
+		return
+	if bool(h.at_arena):
+		_horse.position = ARENA_HORSE
+		_horse.rotation.y = 0.0
+	elif bool(h.turned_out):
 		_horse.position = PADDOCK_POS
 		_horse.rotation.y = -0.4
 	else:
@@ -194,15 +203,101 @@ func _on_shop() -> void:
 
 
 func _on_school() -> void:
-	_walk_then(ARENA_POS + Vector3(-2.2, 0.0, 0.4), func() -> void:
+	if _session:
+		_on_toast("Still in the ring.")
+		return
+	var h = _horse_state()
+	if h and bool(h.schooled_today):
+		_on_toast("%s already worked today." % h.name)
+		return
+	_lead_to_arena(func() -> void:
+		var horse = _horse_state()
+		if horse:
+			horse.at_arena = true
+			horse.turned_out = false
 		_school.open()
 	)
 
 
 func _on_school_picked(kind: int) -> void:
 	var gs := get_node("/root/GameState")
-	_on_toast(Training.apply_session(_horse_state(), kind, gs.data))
-	_refresh_clock()
+	var why := Training.block_reason(_horse_state(), gs.data)
+	if why != "":
+		_on_toast(why)
+		return
+	if _session:
+		_on_toast("Still in the ring.")
+		return
+	_session = true
+	_on_toast("Working %s with %s." % [Training.kind_label(kind), _horse_state().name])
+	_run_school_path(_school_steps(kind), 0, func() -> void:
+		var horse = _horse_state()
+		if horse:
+			horse.at_arena = true
+			horse.turned_out = false
+		_on_toast(Training.apply_session(horse, kind, gs.data))
+		_session = false
+		_refresh_clock()
+	)
+
+
+func _lead_to_arena(done: Callable) -> void:
+	_walk_then(_beside_horse(), func() -> void:
+		if _horse.has_method("walk_to"):
+			_horse.walk_to(ARENA_HORSE)
+		else:
+			_horse.position = ARENA_HORSE
+		_walk_then(ARENA_HORSE + Vector3(1.5, 0.0, 0.5), done)
+	)
+
+
+func _school_steps(kind: int) -> Array:
+	var c := ARENA_POS
+	if kind == Enums.TrainingKind.GYMNASTIC:
+		return [
+			{"pos": Vector3(6.2, 0.0, 1.4)},
+			{"pos": Vector3(6.2, 0.0, -4.0), "jump": true},
+			{"pos": Vector3(7.6, 0.0, 3.2)},
+			{"pos": Vector3(7.6, 0.0, 8.4), "jump": true},
+			{"pos": ARENA_HORSE},
+		]
+	if kind == Enums.TrainingKind.POLES:
+		return [
+			{"pos": c + Vector3(-4.0, 0.0, -5.5)},
+			{"pos": c + Vector3(-4.0, 0.0, 5.5)},
+			{"pos": c + Vector3(3.2, 0.0, 5.5)},
+			{"pos": ARENA_HORSE},
+		]
+	return [
+		{"pos": c + Vector3(-3.6, 0.0, -5.0)},
+		{"pos": c + Vector3(3.6, 0.0, -5.0)},
+		{"pos": c + Vector3(3.6, 0.0, 5.0)},
+		{"pos": c + Vector3(-3.6, 0.0, 5.0)},
+		{"pos": ARENA_HORSE},
+	]
+
+
+func _run_school_path(steps: Array, i: int, done: Callable) -> void:
+	if i >= steps.size():
+		done.call()
+		return
+	var step: Dictionary = steps[i]
+	var dest: Vector3 = step["pos"]
+	var next := func() -> void:
+		_run_school_path(steps, i + 1, done)
+	var rider := dest + Vector3(1.7, 0.0, 0.35)
+	if _player and _player.has_method("walk_to"):
+		_player.walk_to(rider)
+	if bool(step.get("jump", false)) and _horse.has_method("jump_to"):
+		if not _horse.jump_to(dest, next):
+			next.call()
+		return
+	if _horse.has_method("walk_to"):
+		if not _horse.walk_to(dest, next):
+			next.call()
+		return
+	_horse.position = dest
+	next.call()
 
 
 func _beside_horse() -> Vector3:
@@ -210,22 +305,34 @@ func _beside_horse() -> Vector3:
 
 
 func _walk_then(dest: Vector3, done: Callable) -> void:
+	if _session:
+		_on_toast("Still in the ring.")
+		return
 	if _player == null or not _player.has_method("walk_to"):
 		done.call()
 		return
 	if _player.is_busy():
 		_on_toast("Still working.")
 		return
+	if _horse.has_method("is_busy") and _horse.is_busy():
+		_on_toast("Horse is still moving.")
+		return
 	if not _player.walk_to(dest, done):
 		_on_toast("Still walking.")
 
 
 func _send_to_chore(dest: Vector3, done: Callable) -> void:
+	if _session:
+		_on_toast("Still in the ring.")
+		return
 	if _player == null or not _player.has_method("walk_and_do"):
 		done.call()
 		return
 	if _player.is_busy():
 		_on_toast("Still working.")
+		return
+	if _horse.has_method("is_busy") and _horse.is_busy():
+		_on_toast("Horse is still moving.")
 		return
 	var clip := ""
 	if _player.has_method("pick_action_clip"):
@@ -235,6 +342,8 @@ func _send_to_chore(dest: Vector3, done: Callable) -> void:
 
 
 func _on_yard_clicked(screen_pos: Vector2) -> void:
+	if _session:
+		return
 	var from := _cam.project_ray_origin(screen_pos)
 	var to := from + _cam.project_ray_normal(screen_pos) * 80.0
 	var space := get_world_3d().direct_space_state

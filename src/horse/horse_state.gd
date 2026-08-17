@@ -45,6 +45,7 @@ extends Resource
 @export var fed_evening: bool = false
 @export var picked_stall_today: bool = false
 @export var turned_out: bool = false
+@export var at_arena: bool = false
 @export var schooled_today: bool = false
 @export var last_farrier_abs_day: int = -4
 @export var dull_mornings: int = 0

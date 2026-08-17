@@ -11,7 +11,7 @@ static func arena_training_efficiency(data) -> float:
 	return float(data.farm.get("training_efficiency", 0.15))
 
 
-static func apply_session(horse, kind: int, data, intensity: float = 0.55) -> String:
+static func block_reason(horse, data) -> String:
 	if horse == null:
 		return "No horse."
 	if data == null or data.clock == null:
@@ -24,6 +24,21 @@ static func apply_session(horse, kind: int, data, intensity: float = 0.55) -> St
 		return "Too tired to school."
 	if float(horse.soundness) < 55.0:
 		return "Not sound enough to school."
+	return ""
+
+
+static func kind_label(kind: int) -> String:
+	if kind == Enums.TrainingKind.POLES:
+		return "poles"
+	if kind == Enums.TrainingKind.GYMNASTIC:
+		return "gymnastic"
+	return "flat"
+
+
+static func apply_session(horse, kind: int, data, intensity: float = 0.55) -> String:
+	var why := block_reason(horse, data)
+	if why != "":
+		return why
 	var te := arena_training_efficiency(data)
 	var rider := 35.0
 	if data.player:
@@ -35,6 +50,8 @@ static func apply_session(horse, kind: int, data, intensity: float = 0.55) -> St
 	horse.fitness = minf(100.0, float(horse.fitness) + intensity * 6.0)
 	horse.overwork = float(horse.overwork) + maxf(0.0, intensity * 20.0 - 8.0)
 	horse.schooled_today = true
+	horse.at_arena = true
+	horse.turned_out = false
 	var label := "flat"
 	if kind == Enums.TrainingKind.POLES:
 		horse.gymnastics = minf(100.0, float(horse.gymnastics) + gain)

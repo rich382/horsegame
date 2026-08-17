@@ -39,6 +39,9 @@ static func run() -> int:
 	if float(h.flatwork) <= flat0:
 		push_error("training: flatwork did not rise")
 		fails += 1
+	if not bool(h.at_arena):
+		push_error("training: school should put the horse in the arena")
+		fails += 1
 
 	var twice := Training.apply_session(h, Enums.TrainingKind.POLES, gs.data)
 	if not twice.contains("already"):

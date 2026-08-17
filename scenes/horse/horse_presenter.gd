@@ -5,9 +5,50 @@ const Enums := preload("res://src/core/enums.gd")
 const HORSE_FBX := "res://assets/models/horse/Horse.fbx"
 const HORSE_OBJ := "res://assets/models/horse/Horse.obj"
 const TARGET_HEIGHT := 2.05
+const WALK_MPS := 3.0
+const ARRIVE := 0.5
+const JUMP_HEIGHT := 1.05
 
 var _body: Node3D
 var _anim: AnimationPlayer
+var _goal: Vector3
+var _has_goal := false
+var _pending: Callable
+var _jumping := false
+var _jump_from: Vector3
+var _jump_to: Vector3
+var _jump_t := 0.0
+var _jump_dur := 0.8
+
+
+func is_busy() -> bool:
+	return _has_goal or _jumping
+
+
+func walk_to(world: Vector3, then: Callable = Callable()) -> bool:
+	if _jumping:
+		return false
+	_goal = Vector3(world.x, global_position.y, world.z)
+	_has_goal = true
+	_pending = then
+	set_process(true)
+	return true
+
+
+func jump_to(world: Vector3, then: Callable = Callable()) -> bool:
+	if _jumping:
+		return false
+	_has_goal = false
+	_jump_from = global_position
+	_jump_to = Vector3(world.x, global_position.y, world.z)
+	_jump_t = 0.0
+	_jump_dur = _play_named("jump", false)
+	if _jump_dur < 0.35:
+		_jump_dur = 0.8
+	_pending = then
+	_jumping = true
+	set_process(true)
+	return true
 
 
 func setup(horse) -> void:
@@ -20,7 +61,8 @@ func setup(horse) -> void:
 	_normalize_and_plant(_body)
 	_ensure_pick()
 	_anim = _find_anim(_body)
-	_play_idle()
+	_play_locomotion(false)
+	set_process(true)
 	if horse != null:
 		apply_coat(int(horse.coat))
 
@@ -113,19 +155,95 @@ func _world_aabb(root: Node3D) -> AABB:
 	return aabb
 
 
-func _play_idle() -> void:
-	if _anim == null:
+func _process(dt: float) -> void:
+	if _jumping:
+		_tick_jump(dt)
 		return
+	if not _has_goal:
+		return
+	var here := global_position
+	var delta := _goal - here
+	delta.y = 0.0
+	var dist := delta.length()
+	if dist > ARRIVE:
+		var step := minf(dist, WALK_MPS * dt)
+		global_position = here + delta.normalized() * step
+		_face(delta)
+		_play_locomotion(true)
+	else:
+		_has_goal = false
+		_play_locomotion(false)
+		_finish()
+
+
+func _tick_jump(dt: float) -> void:
+	_jump_t += dt
+	var a := clampf(_jump_t / _jump_dur, 0.0, 1.0)
+	var p := _jump_from.lerp(_jump_to, a)
+	p.y = _jump_from.y + JUMP_HEIGHT * sin(PI * a)
+	global_position = p
+	_face(_jump_to - _jump_from)
+	if a >= 1.0:
+		_jumping = false
+		global_position = _jump_to
+		_play_locomotion(false)
+		_finish()
+
+
+func _finish() -> void:
+	var then := _pending
+	_pending = Callable()
+	if then.is_valid():
+		then.call()
+
+
+func _face(delta: Vector3) -> void:
+	delta.y = 0.0
+	if delta.length() < 0.05:
+		return
+	rotation.y = atan2(delta.x, delta.z)
+
+
+func _play_locomotion(walking: bool) -> void:
+	_play_named("walk" if walking else "idle", true)
+
+
+func _play_named(want: String, loop: bool) -> float:
+	if _anim == null:
+		return 0.0
+	var clip := _find_clip(want)
+	if clip == "":
+		return 0.0
+	if _anim.has_animation(clip):
+		var a := _anim.get_animation(clip)
+		a.loop_mode = Animation.LOOP_LINEAR if loop else Animation.LOOP_NONE
+		if _anim.current_animation != clip:
+			_anim.play(clip, 0.12)
+		_anim.speed_scale = 1.15 if want == "walk" else 1.0
+		return a.length
+	return 0.0
+
+
+func _find_clip(want: String) -> String:
+	if _anim == null:
+		return ""
+	var fallback := ""
 	for name in _anim.get_animation_list():
 		var l := String(name).to_lower()
-		if "idle" in l or "stand" in l:
-			_anim.play(name)
-			if _anim.has_animation(name):
-				_anim.get_animation(name).loop_mode = Animation.LOOP_LINEAR
-			return
-	if _anim.get_animation_list().size() > 0:
-		var first: String = _anim.get_animation_list()[0]
-		_anim.play(first)
+		if want == "walk":
+			if "walkslow" in l:
+				continue
+			if "walk" in l:
+				return name
+		elif want == "jump":
+			if "jump" in l:
+				return name
+		elif want == "idle":
+			if "idle" in l or "stand" in l:
+				return name
+		if fallback == "" and _anim.get_animation_list().size() > 0:
+			fallback = name
+	return fallback
 
 
 func _find_anim(n: Node) -> AnimationPlayer:
