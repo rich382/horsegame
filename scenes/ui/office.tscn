@@ -51,8 +51,14 @@ theme_override_font_sizes/font_size = 15
 text = ""
 autowrap_mode = 3
 
-[node name="Jobs" type="VBoxContainer" parent="Center/Card/Margin/VBox"]
+[node name="Scroll" type="ScrollContainer" parent="Center/Card/Margin/VBox"]
+custom_minimum_size = Vector2(0, 380)
 layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Jobs" type="VBoxContainer" parent="Center/Card/Margin/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
 [node name="Close" type="Button" parent="Center/Card/Margin/VBox"]

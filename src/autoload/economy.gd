@@ -3,6 +3,11 @@ extends Node
 
 const Barn := preload("res://src/barn/barn_system.gd")
 const Ashford := preload("res://src/show/ashford.gd")
+const Circuit := preload("res://src/show/circuit.gd")
+const HorseFactoryScript := preload("res://src/horse/horse_factory.gd")
+
+const PROSPECT_COST := 3200
+const HELP_WEEK := 90
 
 const HAY_COST := 40
 const GRAIN_COST := 35
@@ -270,31 +275,124 @@ func do_haul(job_id: String) -> String:
 
 
 func enter_ashford() -> Dictionary:
+	return enter_show("ashford")
+
+
+func enter_show(show_id: String) -> Dictionary:
 	var gs := get_node("/root/GameState")
-	var horse = _starter()
-	var gate: Dictionary = Ashford.enter(gs.data, horse, gs.sim_rng)
+	var horse = _selected()
+	var show: Dictionary = Circuit.show_by_id(show_id)
+	var gate: Dictionary = Circuit.enter_quote(gs.data, horse, show)
 	if not bool(gate.get("ok", false)):
 		return gate
 	var need := int(gate.get("need", 0))
 	var haul := int(gate.get("haul", 0))
-	if not post(&"show", -need, "Ashford entry + haul"):
+	if not post(&"show", -need, "%s entry + haul" % show.get("name", "Show")):
 		return {"ok": false, "msg": "Couldn't post entry.", "result": null}
-	var out: Dictionary = Ashford.ride(gs.data, horse, gs.sim_rng)
+	var out: Dictionary = Circuit.ride(gs.data, horse, gs.sim_rng, show)
 	var prize := int(out.get("prize", 0))
 	if prize > 0:
-		post(&"prize", prize, "Ashford ribbon")
+		post(&"prize", prize, "%s ribbon" % show.get("name", "Show"))
+	gs.data.farm["loaded_for"] = ""
 	var placing := int(out.get("placing", 0))
-	var msg := "Ashford 0.80 m — %s. %s" % [
-		("placed %d" % placing) if placing > 0 else "no ribbon",
+	var msg := "%s — placed %d. %s" % [
+		show.get("class_label", "Class"),
+		placing,
 		("+$%d." % prize) if prize > 0 else "No check.",
 	]
-	if haul == Ashford.HAUL_OWN:
+	if haul == 0:
+		msg += " Already on the trailer."
+	elif haul == Circuit.HAUL_OWN:
 		msg += " You hauled yourself."
 	else:
 		msg += " Paid a shipper."
 	out["ok"] = true
 	out["msg"] = msg
+	out["title"] = "%s · %s" % [show.get("name", "Show"), show.get("class_label", "")]
 	return out
+
+
+func buy_prospect() -> String:
+	var gs := get_node("/root/GameState")
+	var free: Array = Barn.empty_stalls(gs.data.farm)
+	if free.is_empty():
+		return "No empty stall. Sell someone or build the wing."
+	if not post(&"shop", -PROSPECT_COST, "Prospect horse"):
+		return "Can't cover a prospect ($%d)." % PROSPECT_COST
+	var h = HorseFactoryScript.make_prospect(gs.sim_rng)
+	var stall: Dictionary = free[0]
+	h.stall_id = StringName(String(stall.get("id", "stall_1")))
+	stall["occupant_uid"] = h.uid
+	gs.data.horses.append(h)
+	gs.data.farm["selected_uid"] = String(h.uid)
+	return "%s is on the card. Green, cheap, yours." % h.name
+
+
+func sell_selected() -> String:
+	var gs := get_node("/root/GameState")
+	if gs.data.horses.size() <= 1:
+		return "You need to keep one."
+	var h = _selected()
+	if h == null:
+		return "No horse."
+	var price: int = 1800 + int(float(h.jumper_schooling) * 35.0) + int(h.records.size()) * 150
+	if not post(&"sale", price, "Sold %s" % h.name):
+		return "Sale failed."
+	var sid := String(h.stall_id)
+	for s in gs.data.farm.get("stalls", []):
+		if String(s.get("id", "")) == sid:
+			s["occupant_uid"] = ""
+	gs.data.horses.erase(h)
+	gs.data.farm["selected_uid"] = String(gs.data.horses[0].uid)
+	return "Sold %s for $%d. Empty stall." % [h.name, price]
+
+
+func hire_help() -> String:
+	var farm: Dictionary = get_node("/root/GameState").data.farm
+	if bool(farm.get("has_help", false)):
+		return "You already have a working student."
+	if not post(&"help", -HELP_WEEK, "Working student, first week"):
+		return "Can't cover help ($%d/week)." % HELP_WEEK
+	farm["has_help"] = true
+	farm["help_paid_abs"] = get_node("/root/GameState").data.clock.abs_day()
+	return "Working student starts tomorrow. They pick stalls. $%d a week." % HELP_WEEK
+
+
+func pay_help() -> String:
+	var gs := get_node("/root/GameState")
+	var farm: Dictionary = gs.data.farm
+	if not bool(farm.get("has_help", false)):
+		return ""
+	var abs_d: int = gs.data.clock.abs_day()
+	if abs_d - int(farm.get("help_paid_abs", 0)) < 7:
+		return ""
+	if not post(&"help", -HELP_WEEK, "Working student"):
+		farm["has_help"] = false
+		return "Couldn't make payroll. They left."
+	farm["help_paid_abs"] = abs_d
+	return "Paid the working student $%d." % HELP_WEEK
+
+
+func load_trailer(show_id: String) -> String:
+	var gs := get_node("/root/GameState")
+	var show: Dictionary = Circuit.show_by_id(show_id)
+	var why := Circuit.load_block(gs.data, show)
+	if why != "":
+		return why
+	var h = _selected()
+	if h == null:
+		return "No horse."
+	h.energy = maxf(0.0, float(h.energy) - 10.0)
+	h.phase_busy = true
+	gs.data.farm["loaded_for"] = show_id
+	return "%s is on the trailer for %s." % [h.name, show.get("name", "the show")]
+
+
+func _selected():
+	var gs := get_node("/root/GameState")
+	if gs.has_method("selected_horse"):
+		return gs.selected_horse()
+	return _starter()
 
 
 func _buy_unique_tack(def_id: String, cost: int, label: String) -> String:

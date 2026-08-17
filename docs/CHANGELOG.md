@@ -6,6 +6,12 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 ### Added
 
+- Own a string: buy a green prospect ($3,200), sell a made horse, switch with < >.
+- Working student ($90/week) picks stalls. Overdue farrier drops hoof.
+- Circuit: Ashford Saturday 0.80, Crossridge Sunday 0.80, Mill Brook Saturday 0.90. Load the trailer the evening before.
+
+### Added
+
 - Barn office: take boarders ($160/week), haul-for-hire (needs truck + trailer), enter Ashford Saturday 0.80 m.
 - Shop catalog: more tack, drag, extra jumps, barn wing (8 stalls), indoor, used diesel, two-horse trailer.
 - Farm grows when you buy: second barn, truck/trailer blocks, extra fences, arena roof.

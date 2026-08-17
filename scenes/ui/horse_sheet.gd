@@ -26,6 +26,7 @@ func refresh(data, horse) -> void:
 		Care.dirt_line(data, horse),
 		"Work: %s" % _work_line(horse),
 		_farrier_line(data, horse),
+		"String: %d own" % (data.horses.size() if data else 0),
 		"",
 		Care.trainer_line(data, horse),
 	]
@@ -42,7 +43,9 @@ func _farrier_line(data, horse) -> String:
 	if data == null or data.clock == null:
 		return "Farrier: —"
 	var due_in := 14 - (int(data.clock.abs_day()) - int(horse.last_farrier_abs_day))
-	if due_in <= 0:
+	if due_in < 0:
+		return "Farrier overdue. Hooves going."
+	if due_in == 0:
 		return "Farrier is due."
 	return "Farrier in %d days." % due_in
 

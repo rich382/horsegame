@@ -131,6 +131,10 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(110, 40)
 text = "Feed"
 
+[node name="FeedAll" type="Button" parent="HUD/Care"]
+custom_minimum_size = Vector2(90, 40)
+text = "Feed all"
+
 [node name="Pick" type="Button" parent="HUD/Care"]
 custom_minimum_size = Vector2(120, 40)
 text = "Pick stall"
@@ -154,6 +158,14 @@ text = "Shop"
 [node name="Office" type="Button" parent="HUD/Care"]
 custom_minimum_size = Vector2(100, 40)
 text = "Office"
+
+[node name="PrevHorse" type="Button" parent="HUD/Care"]
+custom_minimum_size = Vector2(44, 40)
+text = "<"
+
+[node name="NextHorse" type="Button" parent="HUD/Care"]
+custom_minimum_size = Vector2(44, 40)
+text = ">"
 
 [node name="SchoolWork" type="HBoxContainer" parent="HUD"]
 visible = false
@@ -220,12 +232,15 @@ text = "Pause (P)"
 [node name="Recap" parent="." instance=ExtResource("11_recap")]
 
 [connection signal="pressed" from="HUD/Care/Feed" to="." method="_on_feed"]
+[connection signal="pressed" from="HUD/Care/FeedAll" to="." method="_on_feed_all"]
 [connection signal="pressed" from="HUD/Care/Pick" to="." method="_on_pick"]
 [connection signal="pressed" from="HUD/Care/Turnout" to="." method="_on_turnout"]
 [connection signal="pressed" from="HUD/Care/Groom" to="." method="_on_groom"]
 [connection signal="pressed" from="HUD/Care/School" to="." method="_on_school"]
 [connection signal="pressed" from="HUD/Care/Shop" to="." method="_on_shop"]
 [connection signal="pressed" from="HUD/Care/Office" to="." method="_on_office"]
+[connection signal="pressed" from="HUD/Care/PrevHorse" to="." method="_on_prev_horse"]
+[connection signal="pressed" from="HUD/Care/NextHorse" to="." method="_on_next_horse"]
 [connection signal="pressed" from="HUD/SchoolWork/Flat" to="." method="_on_flat_school"]
 [connection signal="pressed" from="HUD/SchoolWork/Poles" to="." method="_on_poles_school"]
 [connection signal="pressed" from="HUD/SchoolWork/Gymnastic" to="." method="_on_gym_school"]

@@ -1,13 +1,13 @@
 extends CanvasLayer
-## Boarders, haul-for-hire, Ashford Saturday.
+## Boarders, haul-for-hire, circuit, buy/sell horses, help.
 
 const Barn := preload("res://src/barn/barn_system.gd")
-const Ashford := preload("res://src/show/ashford.gd")
+const Circuit := preload("res://src/show/circuit.gd")
 
 signal ashford_done(payload)
 
 @onready var _body: Label = $Center/Card/Margin/VBox/Body
-@onready var _jobs: VBoxContainer = $Center/Card/Margin/VBox/Jobs
+@onready var _jobs: VBoxContainer = $Center/Card/Margin/VBox/Scroll/Jobs
 
 
 func _ready() -> void:
@@ -26,21 +26,22 @@ func _refresh() -> void:
 		_body.text = ""
 		return
 	var farm: Dictionary = gs.data.farm
+	var horse = _horse()
 	var abs_d: int = gs.data.clock.abs_day()
 	var due: int = Barn.due_board(farm, abs_d)
-	var haul_why := Barn.haul_blocked(gs.data)
-	var show_why := Ashford.block_reason(gs.data, _horse())
+	var hname := String(horse.name) if horse else "—"
 	var lines: PackedStringArray = [
-		"Cash $%d" % int(gs.data.player.cash),
-		"Stalls %d   ·   Boarders %d   ·   Board due $%d" % [
-			farm.get("stalls", []).size(),
+		"Working: %s" % hname,
+		"Cash $%d   ·   Own horses %d   ·   Boarders %d" % [
+			int(gs.data.player.cash),
+			gs.data.horses.size(),
 			farm.get("boarders", []).size(),
-			due,
 		],
-		"Rig: %s" % ("truck + trailer" if Barn.has_rig(farm) else "walk or pay a shipper"),
-		"",
-		("Haul: " + haul_why) if haul_why != "" else "Haul: ready.",
-		("Ashford: " + show_why) if show_why != "" else "Ashford: in-gate is open.",
+		"Board due $%d   ·   Help: %s" % [due, "working student" if bool(farm.get("has_help", false)) else "just you"],
+		"Rig: %s%s" % [
+			"truck + trailer" if Barn.has_rig(farm) else "shipper",
+			(" · loaded %s" % farm.get("loaded_for", "")) if String(farm.get("loaded_for", "")) != "" else "",
+		],
 	]
 	_body.text = "\n".join(lines)
 	_rebuild_jobs()
@@ -51,16 +52,21 @@ func _rebuild_jobs() -> void:
 		c.queue_free()
 	_add_btn("Take a boarder", _on_boarder)
 	_add_btn("Collect board", _on_collect)
+	_add_btn("Buy a prospect  —  $3,200", _on_prospect)
+	_add_btn("Sell the selected horse", _on_sell)
+	_add_btn("Hire a working student  —  $90/wk", _on_help)
 	for job in Barn.HAUL_JOBS:
 		var jid := String(job["id"])
-		var label := "%s  —  $%d" % [job["label"], int(job["pay"])]
-		_add_btn(label, func() -> void: _on_haul(jid))
-	_add_btn("Ashford 0.80 m jumper", _on_ashford)
+		_add_btn("%s  —  $%d" % [job["label"], int(job["pay"])], func() -> void: _on_haul(jid))
+	for show in Circuit.SHOWS:
+		var sid := String(show["id"])
+		_add_btn("Load trailer — %s" % show["name"], func() -> void: _on_load(sid))
+		_add_btn("%s · %s" % [show["name"], show["class_label"]], func() -> void: _on_show(sid))
 
 
 func _add_btn(text: String, cb: Callable) -> void:
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(0, 40)
+	b.custom_minimum_size = Vector2(0, 36)
 	b.text = text
 	b.pressed.connect(cb)
 	_jobs.add_child(b)
@@ -76,14 +82,34 @@ func _on_collect() -> void:
 	_refresh()
 
 
+func _on_prospect() -> void:
+	_toast(get_node("/root/Economy").buy_prospect())
+	_refresh()
+
+
+func _on_sell() -> void:
+	_toast(get_node("/root/Economy").sell_selected())
+	_refresh()
+
+
+func _on_help() -> void:
+	_toast(get_node("/root/Economy").hire_help())
+	_refresh()
+
+
 func _on_haul(job_id: String) -> void:
 	_toast(get_node("/root/Economy").do_haul(job_id))
 	_refresh()
 
 
-func _on_ashford() -> void:
-	var out: Dictionary = get_node("/root/Economy").enter_ashford()
-	_toast(String(out.get("msg", "Ashford.")))
+func _on_load(show_id: String) -> void:
+	_toast(get_node("/root/Economy").load_trailer(show_id))
+	_refresh()
+
+
+func _on_show(show_id: String) -> void:
+	var out: Dictionary = get_node("/root/Economy").enter_show(show_id)
+	_toast(String(out.get("msg", "Show.")))
 	_refresh()
 	if bool(out.get("ok", false)):
 		visible = false
@@ -100,6 +126,8 @@ func _toast(msg: String) -> void:
 
 func _horse():
 	var gs := get_node("/root/GameState")
+	if gs.has_method("selected_horse"):
+		return gs.selected_horse()
 	if gs.data == null or gs.data.horses.is_empty():
 		return null
 	return gs.data.horses[0]

@@ -48,6 +48,33 @@ func new_game(config) -> void:
 			{"id": "stall_3", "dirt": 0.0, "occupant_uid": ""},
 		],
 	})
+	data.farm["selected_uid"] = String(horse.uid)
+	_bus().clock_changed.emit()
+
+
+func selected_horse():
+	if data == null or data.horses.is_empty():
+		return null
+	var uid := String(data.farm.get("selected_uid", ""))
+	for h in data.horses:
+		if h != null and String(h.uid) == uid:
+			return h
+	return data.horses[0]
+
+
+func select_next(step: int = 1):
+	if data == null or data.horses.is_empty():
+		return
+	var i := 0
+	var cur = selected_horse()
+	for n in data.horses.size():
+		if data.horses[n] == cur:
+			i = n
+			break
+	i = (i + step) % data.horses.size()
+	if i < 0:
+		i += data.horses.size()
+	data.farm["selected_uid"] = String(data.horses[i].uid)
 	_bus().clock_changed.emit()
 
 
@@ -93,4 +120,12 @@ func _fill_farm(farm: Dictionary) -> Dictionary:
 		farm["boarders"] = []
 	if not farm.has("last_haul_abs_day"):
 		farm["last_haul_abs_day"] = -99
+	if not farm.has("has_help"):
+		farm["has_help"] = false
+	if not farm.has("help_paid_abs"):
+		farm["help_paid_abs"] = 0
+	if not farm.has("loaded_for"):
+		farm["loaded_for"] = ""
+	if not farm.has("selected_uid"):
+		farm["selected_uid"] = ""
 	return farm

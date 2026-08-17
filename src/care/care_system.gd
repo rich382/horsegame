@@ -62,6 +62,31 @@ static func apply_night(data) -> void:
 		h.picked_stall_today = false
 		h.turned_out = false
 		h.at_arena = false
+		_decay_hoof(data, h)
+
+
+static func _decay_hoof(data, horse) -> void:
+	if data == null or data.clock == null or horse == null:
+		return
+	var overdue: int = int(data.clock.abs_day()) - int(horse.last_farrier_abs_day) - 14
+	if overdue > 0:
+		horse.hoof = maxf(20.0, float(horse.hoof) - 2.0)
+
+
+static func help_pick_all(data) -> void:
+	if data == null:
+		return
+	if not bool(data.farm.get("has_help", false)):
+		return
+	for h in data.horses:
+		if h == null or bool(h.picked_stall_today):
+			continue
+		var stall := stall_for(data, h)
+		if stall.is_empty():
+			continue
+		stall["dirt"] = 8.0
+		h.picked_stall_today = true
+		h.cleanliness = minf(100.0, float(h.cleanliness) + 4.0)
 
 
 static func feed(data, horse) -> String:

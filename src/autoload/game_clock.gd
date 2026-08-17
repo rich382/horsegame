@@ -29,6 +29,8 @@ func advance_phase() -> void:
 					h.age_months += 3
 			_bus().season_started.emit(clock.season)
 		_collect_board()
+		_pay_help()
+		CareSystemScript.help_pick_all(_gs().data)
 		_bus().day_started.emit(clock)
 		_bus().phase_started.emit(Enums.Phase.MORNING)
 	else:
@@ -54,6 +56,14 @@ func _collect_board() -> void:
 	if econ and econ.has_method("collect_board"):
 		var msg: String = String(econ.collect_board())
 		if msg.begins_with("Board checks"):
+			_bus().toast.emit(msg)
+
+
+func _pay_help() -> void:
+	var econ = Engine.get_main_loop().root.get_node_or_null("Economy")
+	if econ and econ.has_method("pay_help"):
+		var msg: String = String(econ.pay_help())
+		if msg != "":
 			_bus().toast.emit(msg)
 
 

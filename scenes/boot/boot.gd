@@ -114,8 +114,9 @@ func _refresh_clock() -> void:
 	var clock = gs.data.clock
 	_clock_label.text = clock.hud_text()
 	var horse_name := "—"
-	if gs.data.horses.size() > 0:
-		horse_name = String(gs.data.horses[0].name)
+	var sel = _horse_state()
+	if sel:
+		horse_name = String(sel.name)
 	var farm: Dictionary = gs.data.farm
 	_status_label.text = "%s   ·   $%d   ·   Hay %dd   ·   Grain %dd   ·   Board %d" % [
 		horse_name,
@@ -159,9 +160,31 @@ func _on_identity(horse_name: String, coat: int) -> void:
 
 func _horse_state():
 	var gs := get_node("/root/GameState")
+	if gs.has_method("selected_horse"):
+		return gs.selected_horse()
 	if gs.data == null or gs.data.horses.is_empty():
 		return null
 	return gs.data.horses[0]
+
+
+func _on_next_horse() -> void:
+	get_node("/root/GameState").select_next(1)
+	var h = _horse_state()
+	if h and _horse.has_method("setup"):
+		_horse.setup(h)
+	_refresh_clock()
+	if h:
+		_on_toast("That's %s." % h.name)
+
+
+func _on_prev_horse() -> void:
+	get_node("/root/GameState").select_next(-1)
+	var h = _horse_state()
+	if h and _horse.has_method("setup"):
+		_horse.setup(h)
+	_refresh_clock()
+	if h:
+		_on_toast("That's %s." % h.name)
 
 
 func _refresh_sheet() -> void:
@@ -179,11 +202,30 @@ func _place_horse() -> void:
 		_horse.position = ARENA_HORSE
 		_horse.rotation.y = 0.0
 	elif bool(h.turned_out):
-		_horse.position = PADDOCK_POS
+		_horse.position = PADDOCK_POS + Vector3(float(_horse_index()) * 1.6, 0, 0)
 		_horse.rotation.y = -0.4
 	else:
-		_horse.position = STALL_POS
+		_horse.position = _stall_pos(h)
 		_horse.rotation.y = 0.2
+
+
+func _stall_pos(h) -> Vector3:
+	var n := 0
+	var sid := String(h.stall_id) if h else "stall_0"
+	if sid.begins_with("stall_"):
+		n = int(sid.substr(6))
+	return Vector3(-8.2 + float(n % 4) * 1.8, 0.0, -4.0 - float(int(n / 4)) * 2.4)
+
+
+func _horse_index() -> int:
+	var gs := get_node("/root/GameState")
+	var cur = _horse_state()
+	if gs.data == null:
+		return 0
+	for i in gs.data.horses.size():
+		if gs.data.horses[i] == cur:
+			return i
+	return 0
 
 
 func _on_feed() -> void:
@@ -194,8 +236,20 @@ func _on_feed() -> void:
 	)
 
 
+func _on_feed_all() -> void:
+	var gs := get_node("/root/GameState")
+	if gs.data == null:
+		return
+	var last := ""
+	for h in gs.data.horses:
+		last = Care.feed(gs.data, h)
+	_on_toast("Fed the string. %s" % last)
+	_refresh_clock()
+
+
 func _on_pick() -> void:
-	_send_to_chore(STALL_POS + Vector3(1.4, 0, 0.8), func() -> void:
+	var dest := _stall_pos(_horse_state()) + Vector3(1.4, 0, 0.8)
+	_send_to_chore(dest, func() -> void:
 		var gs := get_node("/root/GameState")
 		_on_toast(Care.pick_stall(gs.data, _horse_state()))
 		_refresh_clock()
@@ -230,7 +284,10 @@ func _on_office() -> void:
 
 func _on_ashford_done(payload: Dictionary) -> void:
 	if _recap and _recap.has_method("open_result"):
-		_recap.open_result(payload.get("result", null), "Ashford 0.80 m jumper")
+		_recap.open_result(payload.get("result", null), String(payload.get("title", "Show")))
+	var h = _horse_state()
+	if h and _horse.has_method("setup"):
+		_horse.setup(h)
 	_refresh_clock()
 
 

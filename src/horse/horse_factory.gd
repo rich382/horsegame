@@ -24,6 +24,9 @@ const BAYBERRY_PAIRS := {
 }
 
 
+const PROSPECT_NAMES := ["Solstice", "Carrick", "Nimbus", "Ashdown", "Wren", "Cinder", "Pimlico"]
+
+
 static func starter_def() -> HorseDef:
 	var def := HorseDef.new()
 	def.genome = HorseGenome.from_pair_table(BAYBERRY_PAIRS, Enums.CoatColor.BAY)
@@ -69,6 +72,28 @@ static func instantiate(def: HorseDef, rng) -> HorseState:
 	h.weight = 5.2
 	h.last_farrier_abs_day = -4
 	h.stall_id = &"stall_0"
+	return h
+
+
+static func make_prospect(rng) -> HorseState:
+	var def := starter_def()
+	def.id = &"prospect"
+	def.express_sigma = 3.5
+	def.start_jumper_schooling = 24.0
+	def.start_gymnastics = 32.0
+	def.start_flatwork = 42.0
+	def.start_hunter_schooling = 28.0
+	def.start_schooled_height_m = 0.70
+	def.start_fitness = 55.0
+	def.age_years = 6
+	var h := instantiate(def, rng)
+	var ni := 0
+	if rng:
+		ni = rng.randi_range(0, PROSPECT_NAMES.size() - 1)
+		h.coat = STARTER_COATS[rng.randi_range(0, STARTER_COATS.size() - 1)]
+	h.name = PROSPECT_NAMES[ni]
+	h.barn_name = h.name.substr(0, mini(8, h.name.length()))
+	h.def_id = &"prospect"
 	return h
 
 

@@ -3,6 +3,7 @@ extends RefCounted
 const Enums := preload("res://src/core/enums.gd")
 const GameConfig := preload("res://src/core/game_config.gd")
 const Barn := preload("res://src/barn/barn_system.gd")
+const Care := preload("res://src/care/care_system.gd")
 
 
 static func run() -> int:
@@ -80,6 +81,32 @@ static func run() -> int:
 		fails += 1
 	elif int(show.get("placing", 0)) < 1:
 		push_error("barn: Ashford placing missing")
+		fails += 1
+
+	gs.data.player.cash = 20000
+	var n0: int = gs.data.horses.size()
+	var bought: String = econ.buy_prospect()
+	if gs.data.horses.size() != n0 + 1:
+		push_error("barn: prospect buy failed (%s)" % bought)
+		fails += 1
+	var sold: String = econ.sell_selected()
+	if gs.data.horses.size() != n0:
+		push_error("barn: sell did not shrink string (%s)" % sold)
+		fails += 1
+	var keep: String = econ.sell_selected()
+	if gs.data.horses.size() < 1 or not keep.contains("keep"):
+		push_error("barn: should keep one horse (%s)" % keep)
+		fails += 1
+	var help: String = econ.hire_help()
+	if not bool(gs.data.farm.get("has_help", false)):
+		push_error("barn: hire help failed (%s)" % help)
+		fails += 1
+	var h = gs.data.horses[0]
+	h.last_farrier_abs_day = -30
+	h.hoof = 80.0
+	Care.apply_night(gs.data)
+	if float(h.hoof) >= 80.0:
+		push_error("barn: overdue hoof should decay")
 		fails += 1
 
 	if fails == 0:
