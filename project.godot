@@ -22,6 +22,7 @@ EventBus="*res://src/autoload/event_bus.gd"
 GameState="*res://src/autoload/game_state.gd"
 GameClock="*res://src/autoload/game_clock.gd"
 SaveService="*res://src/autoload/save_service.gd"
+Economy="*res://src/autoload/economy.gd"
 
 [display]
 

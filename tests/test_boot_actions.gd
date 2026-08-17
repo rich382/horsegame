@@ -38,6 +38,15 @@ static func run() -> int:
 		if boot.get_node_or_null("HUD/Actions/NextPhase") == null:
 			push_error("boot actions: Next Phase button missing")
 			fails += 1
+		if boot.get_node_or_null("HUD/Care/Shop") == null:
+			push_error("boot actions: Shop button missing")
+			fails += 1
+		if boot.get_node_or_null("HUD/Care/School") == null:
+			push_error("boot actions: School button missing")
+			fails += 1
+		if boot.get_node_or_null("Shop") == null or boot.get_node_or_null("School") == null:
+			push_error("boot actions: Shop/School panels missing")
+			fails += 1
 		if boot.get_node_or_null("Camera3D") == null:
 			push_error("boot actions: camera missing")
 			fails += 1

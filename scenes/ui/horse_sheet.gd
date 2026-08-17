@@ -20,10 +20,27 @@ func refresh(data, horse) -> void:
 		"Energy: %s" % Care.band(float(horse.energy)),
 		"Coat: %s" % Care.band(float(horse.cleanliness)),
 		Care.dirt_line(data, horse),
+		"Work: %s" % _work_line(horse),
+		_farrier_line(data, horse),
 		"",
 		Care.trainer_line(data, horse),
 	]
 	_body.text = "\n".join(lines)
+
+
+func _work_line(horse) -> String:
+	if bool(horse.schooled_today):
+		return "already schooled"
+	return "not worked today"
+
+
+func _farrier_line(data, horse) -> String:
+	if data == null or data.clock == null:
+		return "Farrier: —"
+	var due_in := 14 - (int(data.clock.abs_day()) - int(horse.last_farrier_abs_day))
+	if due_in <= 0:
+		return "Farrier is due."
+	return "Farrier in %d days." % due_in
 
 
 func _coat_name(coat: int) -> String:

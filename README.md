@@ -36,12 +36,15 @@ godot --headless --path . --quit-after 2
 Press **Play (F5)** in Godot. Name the horse, pick a coat, then orbit the **3D** barn, jumps, and fence. The horse is a 3D mesh (coat tint).
 
 - **Left-drag** to orbit, **mouse wheel** to zoom
+- **Feed / Pick / In-Out / Groom** — walk over and do the chore
+- **School** — walk to the arena; afternoon flat, poles, or gymnastic
+- **Shop** — walk to the aisle; hay, grain, farrier, boots, martingale, footing
 - **Next Phase** / **N** advances Morning → Afternoon → Evening
 - **Sleep** / **M** skips to the next morning
 - **Save** / **F5** writes slot 1
 - **Pause** / **P** (do not use Esc inside the editor — Esc stops Play)
 
-The farm, horses, and Ashford show come in later PRs. The clock and save already work.
+Ashford (entry, haul, 0.80 m jumper) is next.
 
 ## Vertical slice
 

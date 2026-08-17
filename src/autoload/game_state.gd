@@ -30,21 +30,49 @@ func new_game(config) -> void:
 	sim_rng.reset(data.seed, 0)
 	var horse = HorseFactoryScript.instantiate(HorseFactoryScript.starter_def(), sim_rng)
 	data.horses = [horse]
-	data.farm = {
+	horse.tack = {"saddle_uid": "t_saddle", "bridle_uid": "t_bridle"}
+	data.farm = _fill_farm({
 		"care_quality": 0.50,
 		"footing_quality": 40,
+		"training_efficiency": 0.15,
+		"hay_days": 14,
+		"grain_days": 14,
+		"tack_owned": [
+			{"uid": "t_saddle", "def_id": "cc_saddle", "condition": 70},
+			{"uid": "t_bridle", "def_id": "snaffle", "condition": 70},
+		],
 		"stalls": [
 			{"id": "stall_0", "dirt": 15.0, "occupant_uid": horse.uid},
 			{"id": "stall_1", "dirt": 0.0, "occupant_uid": ""},
 			{"id": "stall_2", "dirt": 0.0, "occupant_uid": ""},
 			{"id": "stall_3", "dirt": 0.0, "occupant_uid": ""},
 		],
-	}
+	})
 	_bus().clock_changed.emit()
 
 
 func replace_data(d) -> void:
 	data = d
+	if data:
+		data.farm = _fill_farm(data.farm if data.farm else {})
 	sim_rng = RngScript.new()
 	sim_rng.reset(d.seed, d.rng_call_count)
 	_bus().clock_changed.emit()
+
+
+func _fill_farm(farm: Dictionary) -> Dictionary:
+	if not farm.has("hay_days"):
+		farm["hay_days"] = 14
+	if not farm.has("grain_days"):
+		farm["grain_days"] = 14
+	if not farm.has("training_efficiency"):
+		farm["training_efficiency"] = 0.15
+	if not farm.has("footing_quality"):
+		farm["footing_quality"] = 40
+	if not farm.has("care_quality"):
+		farm["care_quality"] = 0.50
+	if not farm.has("tack_owned"):
+		farm["tack_owned"] = []
+	if not farm.has("stalls"):
+		farm["stalls"] = []
+	return farm

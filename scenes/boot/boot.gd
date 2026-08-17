@@ -3,8 +3,11 @@ extends Node3D
 ## Esc is eaten by the Godot editor (stops Play). Use on-screen buttons or P.
 
 const Care := preload("res://src/care/care_system.gd")
+const Training := preload("res://src/training/training_system.gd")
 const STALL_POS := Vector3(-8.2, 0.0, -4.0)
 const PADDOCK_POS := Vector3(-10.5, 0.0, 3.6)
+const ARENA_POS := Vector3(6.5, 0.0, 2.0)
+const SHOP_POS := Vector3(-6.6, 0.0, -3.4)
 
 @onready var _pause: CanvasLayer = $PauseMenu
 @onready var _clock_label: Label = $HUD/Clock
@@ -16,6 +19,8 @@ const PADDOCK_POS := Vector3(-10.5, 0.0, 3.6)
 @onready var _sheet = $HUD/HorseSheet
 @onready var _cam: Camera3D = $Camera3D
 @onready var _player: Node3D = $PlayerAvatar
+@onready var _shop: CanvasLayer = $Shop
+@onready var _school: CanvasLayer = $School
 
 
 func _ready() -> void:
@@ -29,10 +34,11 @@ func _ready() -> void:
 		bus.clock_changed.connect(_refresh_clock)
 	_new_game.confirmed.connect(_on_identity)
 	_new_game.coat_previewed.connect(_on_coat_preview)
+	_school.picked.connect(_on_school_picked)
 	if _cam.has_signal("yard_clicked"):
 		_cam.yard_clicked.connect(_on_yard_clicked)
 	_refresh_clock()
-	_on_toast("Name your horse. You walk over and do the chores.")
+	_on_toast("Name your horse. Feed, school in the afternoon, shop when the loft runs low.")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -89,7 +95,13 @@ func _refresh_clock() -> void:
 	var horse_name := "—"
 	if gs.data.horses.size() > 0:
 		horse_name = String(gs.data.horses[0].name)
-	_status_label.text = "%s   ·   Cash $%d" % [horse_name, int(gs.data.player.cash)]
+	var farm: Dictionary = gs.data.farm
+	_status_label.text = "%s   ·   $%d   ·   Hay %dd   ·   Grain %dd" % [
+		horse_name,
+		int(gs.data.player.cash),
+		int(farm.get("hay_days", 0)),
+		int(farm.get("grain_days", 0)),
+	]
 	_refresh_sheet()
 	_place_horse()
 
@@ -175,8 +187,37 @@ func _on_groom() -> void:
 	)
 
 
+func _on_shop() -> void:
+	_walk_then(SHOP_POS, func() -> void:
+		_shop.open()
+	)
+
+
+func _on_school() -> void:
+	_walk_then(ARENA_POS + Vector3(-2.2, 0.0, 0.4), func() -> void:
+		_school.open()
+	)
+
+
+func _on_school_picked(kind: int) -> void:
+	var gs := get_node("/root/GameState")
+	_on_toast(Training.apply_session(_horse_state(), kind, gs.data))
+	_refresh_clock()
+
+
 func _beside_horse() -> Vector3:
 	return _horse.global_position + Vector3(1.3, 0, 0.4)
+
+
+func _walk_then(dest: Vector3, done: Callable) -> void:
+	if _player == null or not _player.has_method("walk_to"):
+		done.call()
+		return
+	if _player.is_busy():
+		_on_toast("Still working.")
+		return
+	if not _player.walk_to(dest, done):
+		_on_toast("Still walking.")
 
 
 func _send_to_chore(dest: Vector3, done: Callable) -> void:

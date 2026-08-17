@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scenes/boot/boot.gd" id="1_boot"]
 [ext_resource type="Script" path="res://scenes/boot/orbit_camera.gd" id="2_cam"]
@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/new_game.tscn" id="6_new"]
 [ext_resource type="PackedScene" path="res://scenes/ui/horse_sheet.tscn" id="7_sheet"]
 [ext_resource type="PackedScene" path="res://scenes/player/player_avatar.tscn" id="8_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/shop.tscn" id="9_shop"]
+[ext_resource type="PackedScene" path="res://scenes/ui/school.tscn" id="10_school"]
 
 [sub_resource type="Environment" id="Environment_boot"]
 background_mode = 1
@@ -71,13 +73,17 @@ theme_override_font_sizes/font_size = 20
 text = "Year 1  Spring  Week 1  Mon  Morning"
 
 [node name="Status" type="Label" parent="HUD"]
-offset_left = 28.0
-offset_top = 100.0
-offset_right = 980.0
-offset_bottom = 128.0
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -760.0
+offset_top = 16.0
+offset_right = -28.0
+offset_bottom = 84.0
 theme_override_colors/font_color = Color(0.93, 0.93, 0.88, 1)
 theme_override_font_sizes/font_size = 16
 text = "Cash $10000"
+horizontal_alignment = 2
 
 [node name="Toast" type="Label" parent="HUD"]
 anchors_preset = 7
@@ -108,13 +114,14 @@ theme_override_colors/font_color = Color(0.90, 0.88, 0.80, 0.9)
 theme_override_font_sizes/font_size = 15
 text = "Left-drag: orbit    Wheel: zoom
 N next phase    M sleep    P pause
+School is afternoon    Shop is the loft
 (Esc stops Play inside the Godot editor)"
 horizontal_alignment = 2
 
 [node name="Care" type="HBoxContainer" parent="HUD"]
 offset_left = 24.0
 offset_top = 108.0
-offset_right = 720.0
+offset_right = 980.0
 offset_bottom = 156.0
 theme_override_constants/separation = 10
 
@@ -133,6 +140,14 @@ text = "In / Out"
 [node name="Groom" type="Button" parent="HUD/Care"]
 custom_minimum_size = Vector2(110, 40)
 text = "Groom"
+
+[node name="School" type="Button" parent="HUD/Care"]
+custom_minimum_size = Vector2(110, 40)
+text = "School"
+
+[node name="Shop" type="Button" parent="HUD/Care"]
+custom_minimum_size = Vector2(100, 40)
+text = "Shop"
 
 [node name="HorseSheet" parent="HUD" instance=ExtResource("7_sheet")]
 
@@ -166,10 +181,16 @@ text = "Pause (P)"
 
 [node name="NewGame" parent="." instance=ExtResource("6_new")]
 
+[node name="Shop" parent="." instance=ExtResource("9_shop")]
+
+[node name="School" parent="." instance=ExtResource("10_school")]
+
 [connection signal="pressed" from="HUD/Care/Feed" to="." method="_on_feed"]
 [connection signal="pressed" from="HUD/Care/Pick" to="." method="_on_pick"]
 [connection signal="pressed" from="HUD/Care/Turnout" to="." method="_on_turnout"]
 [connection signal="pressed" from="HUD/Care/Groom" to="." method="_on_groom"]
+[connection signal="pressed" from="HUD/Care/School" to="." method="_on_school"]
+[connection signal="pressed" from="HUD/Care/Shop" to="." method="_on_shop"]
 [connection signal="pressed" from="HUD/Actions/NextPhase" to="." method="_on_next_phase"]
 [connection signal="pressed" from="HUD/Actions/Sleep" to="." method="_on_sleep"]
 [connection signal="pressed" from="HUD/Actions/Save" to="." method="_on_save"]

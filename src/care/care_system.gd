@@ -72,14 +72,34 @@ static func feed(data, horse) -> String:
 	if int(phase) == Enums.Phase.MORNING:
 		if horse.fed_morning:
 			return "%s already had breakfast." % horse.name
+		if not _take_feed(data, true):
+			return "Bin's empty. Buy hay and grain at the shop."
 		horse.hunger = minf(100.0, float(horse.hunger) + 40.0)
 		horse.fed_morning = true
 		return "Grain and hay. %s tucks in." % horse.name
 	if horse.fed_evening:
 		return "%s already had night hay." % horse.name
+	if not _take_feed(data, false):
+		return "No hay left. Buy a bale at the shop."
 	horse.hunger = minf(100.0, float(horse.hunger) + 28.0)
 	horse.fed_evening = true
 	return "Night hay. %s settles." % horse.name
+
+
+static func _take_feed(data, morning: bool) -> bool:
+	if data == null:
+		return false
+	var farm: Dictionary = data.farm
+	var hay := int(farm.get("hay_days", 0))
+	if hay <= 0:
+		return false
+	if morning:
+		var grain := int(farm.get("grain_days", 0))
+		if grain <= 0:
+			return false
+		farm["grain_days"] = grain - 1
+	farm["hay_days"] = hay - 1
+	return true
 
 
 static func pick_stall(data, horse) -> String:
