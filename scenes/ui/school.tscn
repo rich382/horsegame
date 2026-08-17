@@ -11,48 +11,69 @@ script = ExtResource("1_school")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.05, 0.07, 0.06, 0.55)
+color = Color(0.05, 0.07, 0.06, 0.62)
 
-[node name="Panel" type="VBoxContainer" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -180.0
-offset_right = 220.0
-offset_bottom = 180.0
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(440, 380)
+
+[node name="Back" type="ColorRect" parent="Center/Card"]
+layout_mode = 2
+color = Color(0.14, 0.17, 0.15, 0.96)
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="Center/Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Center/Card/Margin"]
+layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="Panel"]
+[node name="Title" type="Label" parent="Center/Card/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.90, 0.76, 1)
 theme_override_font_sizes/font_size = 28
 text = "School"
 horizontal_alignment = 1
 
-[node name="Hint" type="Label" parent="Panel"]
+[node name="Hint" type="Label" parent="Center/Card/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.90, 0.88, 0.80, 1)
 theme_override_font_sizes/font_size = 16
-text = "One trip. Don't drill them into the ground."
+text = "They're in the ring. One trip — don't drill them."
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Flat" type="Button" parent="Panel"]
-custom_minimum_size = Vector2(0, 44)
+[node name="Flat" type="Button" parent="Center/Card/Margin/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
 text = "Flat"
 
-[node name="Poles" type="Button" parent="Panel"]
-custom_minimum_size = Vector2(0, 44)
+[node name="Poles" type="Button" parent="Center/Card/Margin/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
 text = "Poles"
 
-[node name="Gymnastic" type="Button" parent="Panel"]
-custom_minimum_size = Vector2(0, 44)
+[node name="Gymnastic" type="Button" parent="Center/Card/Margin/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
 text = "Gymnastic 0.80 m"
 
-[node name="Close" type="Button" parent="Panel"]
-custom_minimum_size = Vector2(0, 40)
+[node name="Close" type="Button" parent="Center/Card/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
 text = "Leave the arena"
 
-[connection signal="pressed" from="Panel/Flat" to="." method="_on_flat"]
-[connection signal="pressed" from="Panel/Poles" to="." method="_on_poles"]
-[connection signal="pressed" from="Panel/Gymnastic" to="." method="_on_gymnastic"]
-[connection signal="pressed" from="Panel/Close" to="." method="_on_close"]
+[connection signal="pressed" from="Center/Card/Margin/VBox/Flat" to="." method="_on_flat"]
+[connection signal="pressed" from="Center/Card/Margin/VBox/Poles" to="." method="_on_poles"]
+[connection signal="pressed" from="Center/Card/Margin/VBox/Gymnastic" to="." method="_on_gymnastic"]
+[connection signal="pressed" from="Center/Card/Margin/VBox/Close" to="." method="_on_close"]

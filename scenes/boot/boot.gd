@@ -23,6 +23,7 @@ const Enums := preload("res://src/core/enums.gd")
 @onready var _player: Node3D = $PlayerAvatar
 @onready var _shop: CanvasLayer = $Shop
 @onready var _school: CanvasLayer = $School
+@onready var _school_work: HBoxContainer = $HUD/SchoolWork
 
 var _session := false
 
@@ -39,6 +40,10 @@ func _ready() -> void:
 	_new_game.confirmed.connect(_on_identity)
 	_new_game.coat_previewed.connect(_on_coat_preview)
 	_school.picked.connect(_on_school_picked)
+	if _school.has_signal("closed"):
+		_school.closed.connect(_hide_school_choices)
+	if _school_work:
+		_school_work.visible = false
 	if _cam.has_signal("yard_clicked"):
 		_cam.yard_clicked.connect(_on_yard_clicked)
 	_refresh_clock()
@@ -210,16 +215,37 @@ func _on_school() -> void:
 	if h and bool(h.schooled_today):
 		_on_toast("%s already worked today." % h.name)
 		return
-	_lead_to_arena(func() -> void:
-		var horse = _horse_state()
-		if horse:
-			horse.at_arena = true
-			horse.turned_out = false
-		_school.open()
-	)
+	_show_school_choices()
+	_on_toast("Pick a trip — Flat, Poles, or Gymnastic.")
+
+
+func _show_school_choices() -> void:
+	if _school_work:
+		_school_work.visible = true
+	_school.open()
+
+
+func _hide_school_choices() -> void:
+	if _school_work:
+		_school_work.visible = false
+	if _school and _school.visible:
+		_school.visible = false
+
+
+func _on_flat_school() -> void:
+	_on_school_picked(Enums.TrainingKind.FLAT)
+
+
+func _on_poles_school() -> void:
+	_on_school_picked(Enums.TrainingKind.POLES)
+
+
+func _on_gym_school() -> void:
+	_on_school_picked(Enums.TrainingKind.GYMNASTIC)
 
 
 func _on_school_picked(kind: int) -> void:
+	_hide_school_choices()
 	var gs := get_node("/root/GameState")
 	var why := Training.block_reason(_horse_state(), gs.data)
 	if why != "":
@@ -229,25 +255,44 @@ func _on_school_picked(kind: int) -> void:
 		_on_toast("Still in the ring.")
 		return
 	_session = true
-	_on_toast("Working %s with %s." % [Training.kind_label(kind), _horse_state().name])
-	_run_school_path(_school_steps(kind), 0, func() -> void:
+	_on_toast("Taking %s to the ring for %s." % [_horse_state().name, Training.kind_label(kind)])
+	_lead_to_arena(func() -> void:
 		var horse = _horse_state()
 		if horse:
 			horse.at_arena = true
 			horse.turned_out = false
-		_on_toast(Training.apply_session(horse, kind, gs.data))
-		_session = false
-		_refresh_clock()
+		_on_toast("Working %s with %s." % [Training.kind_label(kind), horse.name if horse else "them"])
+		_run_school_path(_school_steps(kind), 0, func() -> void:
+			_on_toast(Training.apply_session(_horse_state(), kind, gs.data))
+			_session = false
+			_refresh_clock()
+		)
 	)
 
 
 func _lead_to_arena(done: Callable) -> void:
-	_walk_then(_beside_horse(), func() -> void:
+	var finish := func() -> void:
+		if done.is_valid():
+			done.call()
+	if _player == null or not _player.has_method("walk_to"):
+		if _horse.has_method("walk_to"):
+			_horse.walk_to(ARENA_HORSE, finish)
+		else:
+			_horse.position = ARENA_HORSE
+			finish.call()
+		return
+	if _player.is_busy():
+		if _horse.has_method("walk_to"):
+			_horse.walk_to(ARENA_HORSE, finish)
+		else:
+			finish.call()
+		return
+	_player.walk_to(_beside_horse(), func() -> void:
 		if _horse.has_method("walk_to"):
 			_horse.walk_to(ARENA_HORSE)
 		else:
 			_horse.position = ARENA_HORSE
-		_walk_then(ARENA_HORSE + Vector3(1.5, 0.0, 0.5), done)
+		_player.walk_to(ARENA_HORSE + Vector3(1.5, 0.0, 0.5), finish)
 	)
 
 
@@ -313,9 +358,6 @@ func _walk_then(dest: Vector3, done: Callable) -> void:
 		return
 	if _player.is_busy():
 		_on_toast("Still working.")
-		return
-	if _horse.has_method("is_busy") and _horse.is_busy():
-		_on_toast("Horse is still moving.")
 		return
 	if not _player.walk_to(dest, done):
 		_on_toast("Still walking.")

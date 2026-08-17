@@ -149,6 +149,30 @@ text = "School"
 custom_minimum_size = Vector2(100, 40)
 text = "Shop"
 
+[node name="SchoolWork" type="HBoxContainer" parent="HUD"]
+visible = false
+offset_left = 24.0
+offset_top = 164.0
+offset_right = 980.0
+offset_bottom = 212.0
+theme_override_constants/separation = 10
+
+[node name="Flat" type="Button" parent="HUD/SchoolWork"]
+custom_minimum_size = Vector2(110, 40)
+text = "Flat"
+
+[node name="Poles" type="Button" parent="HUD/SchoolWork"]
+custom_minimum_size = Vector2(110, 40)
+text = "Poles"
+
+[node name="Gymnastic" type="Button" parent="HUD/SchoolWork"]
+custom_minimum_size = Vector2(180, 40)
+text = "Gymnastic 0.80 m"
+
+[node name="Cancel" type="Button" parent="HUD/SchoolWork"]
+custom_minimum_size = Vector2(110, 40)
+text = "Cancel"
+
 [node name="HorseSheet" parent="HUD" instance=ExtResource("7_sheet")]
 
 [node name="Actions" type="HBoxContainer" parent="HUD"]
@@ -191,6 +215,10 @@ text = "Pause (P)"
 [connection signal="pressed" from="HUD/Care/Groom" to="." method="_on_groom"]
 [connection signal="pressed" from="HUD/Care/School" to="." method="_on_school"]
 [connection signal="pressed" from="HUD/Care/Shop" to="." method="_on_shop"]
+[connection signal="pressed" from="HUD/SchoolWork/Flat" to="." method="_on_flat_school"]
+[connection signal="pressed" from="HUD/SchoolWork/Poles" to="." method="_on_poles_school"]
+[connection signal="pressed" from="HUD/SchoolWork/Gymnastic" to="." method="_on_gym_school"]
+[connection signal="pressed" from="HUD/SchoolWork/Cancel" to="." method="_hide_school_choices"]
 [connection signal="pressed" from="HUD/Actions/NextPhase" to="." method="_on_next_phase"]
 [connection signal="pressed" from="HUD/Actions/Sleep" to="." method="_on_sleep"]
 [connection signal="pressed" from="HUD/Actions/Save" to="." method="_on_save"]

@@ -44,9 +44,21 @@ static func run() -> int:
 		if boot.get_node_or_null("HUD/Care/School") == null:
 			push_error("boot actions: School button missing")
 			fails += 1
+		if boot.get_node_or_null("HUD/SchoolWork/Flat") == null:
+			push_error("boot actions: Flat school button missing")
+			fails += 1
 		if boot.get_node_or_null("Shop") == null or boot.get_node_or_null("School") == null:
 			push_error("boot actions: Shop/School panels missing")
 			fails += 1
+		var school: Node = boot.get_node_or_null("School")
+		if school and school.has_method("open"):
+			school.open()
+			if not bool(school.visible):
+				push_error("boot actions: School.open did not show picker")
+				fails += 1
+			if school.get_node_or_null("Center/Card/Margin/VBox/Flat") == null:
+				push_error("boot actions: school picker Flat missing")
+				fails += 1
 		if boot.get_node_or_null("Camera3D") == null:
 			push_error("boot actions: camera missing")
 			fails += 1

@@ -4,8 +4,9 @@ extends CanvasLayer
 const Enums := preload("res://src/core/enums.gd")
 
 signal picked(kind: int)
+signal closed
 
-@onready var _hint: Label = $Panel/Hint
+@onready var _hint: Label = $Center/Card/Margin/VBox/Hint
 
 
 func _ready() -> void:
@@ -55,3 +56,4 @@ func _on_gymnastic() -> void:
 
 func _on_close() -> void:
 	visible = false
+	closed.emit()
