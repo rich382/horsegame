@@ -18,6 +18,7 @@ func setup(horse) -> void:
 		return
 	add_child(_body)
 	_normalize_and_plant(_body)
+	_ensure_pick()
 	_anim = _find_anim(_body)
 	_play_idle()
 	if horse != null:
@@ -69,6 +70,22 @@ func _instance_model() -> Node3D:
 				if n is Node3D:
 					return n
 	return null
+
+
+func _ensure_pick() -> void:
+	if get_node_or_null("Pick") != null:
+		return
+	var body := StaticBody3D.new()
+	body.name = "Pick"
+	body.collision_layer = 1
+	body.input_ray_pickable = true
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(1.1, 2.0, 2.2)
+	shape.shape = box
+	shape.position = Vector3(0, 1.0, 0)
+	body.add_child(shape)
+	add_child(body)
 
 
 func _normalize_and_plant(root: Node3D) -> void:

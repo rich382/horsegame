@@ -30,6 +30,16 @@ func new_game(config) -> void:
 	sim_rng.reset(data.seed, 0)
 	var horse = HorseFactoryScript.instantiate(HorseFactoryScript.starter_def(), sim_rng)
 	data.horses = [horse]
+	data.farm = {
+		"care_quality": 0.50,
+		"footing_quality": 40,
+		"stalls": [
+			{"id": "stall_0", "dirt": 15.0, "occupant_uid": horse.uid},
+			{"id": "stall_1", "dirt": 0.0, "occupant_uid": ""},
+			{"id": "stall_2", "dirt": 0.0, "occupant_uid": ""},
+			{"id": "stall_3", "dirt": 0.0, "occupant_uid": ""},
+		],
+	}
 	_bus().clock_changed.emit()
 
 

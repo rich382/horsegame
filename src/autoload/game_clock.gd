@@ -3,6 +3,7 @@ extends Node
 
 const Enums := preload("res://src/core/enums.gd")
 const CareSystemScript := preload("res://src/care/care_system.gd")
+const TrainingSystemScript := preload("res://src/training/training_system.gd")
 
 
 func _gs() -> Node:
@@ -48,25 +49,6 @@ func sleep_until_morning() -> void:
 
 
 func _run_night_bundle() -> void:
-	## TrainingSystem.rest / InjurySystem.tick arrive in PR 6.
 	for h in _gs().data.horses:
-		if h is Dictionary:
-			h["phase_busy"] = false
-			h["schooled_today"] = false
-			h["fed_morning"] = false
-			h["fed_evening"] = false
-			h["picked_stall_today"] = false
-			h["turned_out"] = false
-		elif h != null:
-			if "phase_busy" in h:
-				h.phase_busy = false
-			if "schooled_today" in h:
-				h.schooled_today = false
-			if "fed_morning" in h:
-				h.fed_morning = false
-			if "fed_evening" in h:
-				h.fed_evening = false
-			if "picked_stall_today" in h:
-				h.picked_stall_today = false
-			if "turned_out" in h:
-				h.turned_out = false
+		TrainingSystemScript.rest(h)
+	CareSystemScript.apply_night(_gs().data)

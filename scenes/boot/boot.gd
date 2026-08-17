@@ -2,6 +2,10 @@ extends Node3D
 ## Playable boot yard: orbit camera, visible clock, on-screen actions.
 ## Esc is eaten by the Godot editor (stops Play). Use on-screen buttons or P.
 
+const Care := preload("res://src/care/care_system.gd")
+const STALL_POS := Vector3(-8.2, 0.0, -4.0)
+const PADDOCK_POS := Vector3(-10.5, 0.0, 3.6)
+
 @onready var _pause: CanvasLayer = $PauseMenu
 @onready var _clock_label: Label = $HUD/Clock
 @onready var _toast_label: Label = $HUD/Toast
@@ -9,6 +13,8 @@ extends Node3D
 @onready var _yard: Node3D = $Yard
 @onready var _horse: Node3D = $HorsePresenter
 @onready var _new_game: CanvasLayer = $NewGame
+@onready var _sheet = $HUD/HorseSheet
+@onready var _cam: Camera3D = $Camera3D
 
 
 func _ready() -> void:
@@ -22,8 +28,10 @@ func _ready() -> void:
 		bus.clock_changed.connect(_refresh_clock)
 	_new_game.confirmed.connect(_on_identity)
 	_new_game.coat_previewed.connect(_on_coat_preview)
+	if _cam.has_signal("yard_clicked"):
+		_cam.yard_clicked.connect(_on_yard_clicked)
 	_refresh_clock()
-	_on_toast("Name your horse, pick a coat, then look around the yard.")
+	_on_toast("Name your horse, then Feed / Pick / In-Out / Groom.")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -80,9 +88,9 @@ func _refresh_clock() -> void:
 	var horse_name := "—"
 	if gs.data.horses.size() > 0:
 		horse_name = String(gs.data.horses[0].name)
-	_status_label.text = "%s   ·   Cash $%d   ·   Next Phase / Sleep still run the clock." % [
-		horse_name, int(gs.data.player.cash)
-	]
+	_status_label.text = "%s   ·   Cash $%d" % [horse_name, int(gs.data.player.cash)]
+	_refresh_sheet()
+	_place_horse()
 
 
 func _spawn_horse() -> void:
@@ -90,10 +98,9 @@ func _spawn_horse() -> void:
 	var horse = null
 	if gs.data and gs.data.horses.size() > 0:
 		horse = gs.data.horses[0]
-	_horse.position = Vector3(-8.0, 0.0, 2.2)
-	_horse.rotation.y = 0.5
 	if _horse.has_method("setup"):
 		_horse.setup(horse)
+	_place_horse()
 
 
 func _on_coat_preview(coat: int) -> void:
@@ -110,4 +117,65 @@ func _on_identity(horse_name: String, coat: int) -> void:
 	if _horse.has_method("setup"):
 		_horse.setup(gs.data.horses[0])
 	_refresh_clock()
-	_on_toast("%s is on the farm." % gs.data.horses[0].name)
+	_on_toast("%s is on the farm. Start with feed." % gs.data.horses[0].name)
+
+
+func _horse_state():
+	var gs := get_node("/root/GameState")
+	if gs.data == null or gs.data.horses.is_empty():
+		return null
+	return gs.data.horses[0]
+
+
+func _refresh_sheet() -> void:
+	if _sheet and _sheet.has_method("refresh"):
+		_sheet.refresh(get_node("/root/GameState").data, _horse_state())
+
+
+func _place_horse() -> void:
+	var h = _horse_state()
+	if h == null:
+		return
+	if bool(h.turned_out):
+		_horse.position = PADDOCK_POS
+		_horse.rotation.y = -0.4
+	else:
+		_horse.position = STALL_POS
+		_horse.rotation.y = 0.2
+
+
+func _on_feed() -> void:
+	var gs := get_node("/root/GameState")
+	_on_toast(Care.feed(gs.data, _horse_state()))
+	_refresh_clock()
+
+
+func _on_pick() -> void:
+	var gs := get_node("/root/GameState")
+	_on_toast(Care.pick_stall(gs.data, _horse_state()))
+	_refresh_clock()
+
+
+func _on_turnout() -> void:
+	_on_toast(Care.toggle_turnout(_horse_state()))
+	_refresh_clock()
+
+
+func _on_groom() -> void:
+	_on_toast(Care.groom(_horse_state()))
+	_refresh_clock()
+
+
+func _on_yard_clicked(screen_pos: Vector2) -> void:
+	var from := _cam.project_ray_origin(screen_pos)
+	var to := from + _cam.project_ray_normal(screen_pos) * 80.0
+	var space := get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(from, to)
+	var hit := space.intersect_ray(q)
+	if hit.is_empty():
+		return
+	var n: Node = hit.get("collider")
+	if n and _horse.is_ancestor_of(n):
+		get_node("/root/EventBus").horse_selected.emit(String(_horse_state().uid) if _horse_state() else "")
+		_refresh_sheet()
+		_on_toast("That's %s." % _horse_state().name)

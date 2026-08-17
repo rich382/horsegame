@@ -14,6 +14,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 - Horse card is Blender-rigged (`horse_rigged.glb`) with looping idle; coats swap the same skin.
 - Barn sunk so the painted floor meets the grass; horse stands on the ground instead of lying through it.
 - Replaced billboard barn/jump/fence with Blender 3D meshes. Horse is the Quaternius 3D model, planted on the grass.
+- Daily care: feed, pick stall, turnout, groom, horse sheet. Hunger follows the design table.
 
 ### Added
 
