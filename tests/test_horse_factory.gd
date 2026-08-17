@@ -33,6 +33,27 @@ static func run() -> int:
 	if int(h.age_months) != 132:
 		push_error("horse factory: after 112 sleeps age_months=%s want 132" % str(h.age_months))
 		fails += 1
+	var packed = load("res://assets/models/horse/horse_rigged.glb")
+	if packed == null:
+		push_error("horse factory: horse_rigged.glb failed to load")
+		fails += 1
+	else:
+		var inst: Node = packed.instantiate()
+		var ap := _find_anim(inst)
+		if ap == null or not ap.has_animation("idle") or not ap.has_animation("walk"):
+			push_error("horse factory: rig missing idle/walk")
+			fails += 1
+		inst.free()
 	if fails == 0:
 		print("test_horse_factory: ok")
 	return fails
+
+
+static func _find_anim(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n
+	for c in n.get_children():
+		var found := _find_anim(c)
+		if found:
+			return found
+	return null
