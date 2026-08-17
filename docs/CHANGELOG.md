@@ -12,6 +12,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 - Farm and horse are Grok Imagine paintings (cutout sprites): shedrow barn, hunter jump, white fence, oak, four coats. Coat buttons preview live.
 - Horse card is Blender-rigged (`horse_rigged.glb`) with looping idle; coats swap the same skin.
+- Barn sunk so the painted floor meets the grass; horse stands on the ground instead of lying through it.
 
 ### Added
 

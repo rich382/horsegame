@@ -42,9 +42,7 @@ def make_card(aspect: float) -> bpy.types.Object:
     card.name = "HorseCard"
     card.scale = (width, HEIGHT_M, 1.0)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    # Face +Z so Godot/glTF sees the painting
-    card.rotation_euler = (math.radians(90.0), 0.0, 0.0)
-    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    # Stay in XY (Y up, face +Z). Do not lay the card on the ground.
     return card
 
 
@@ -162,8 +160,8 @@ def make_actions(rig: bpy.types.Object) -> None:
         "Head": [(1, 0), (13, 6), (25, 0), (37, -4), (48, 0)],
         "Neck": [(1, 0), (25, 3), (48, 0)],
         "Spine": [(1, 0), (25, -1.5), (48, 0)],
-        "FrontLeg": [(1, 0), (25, 2), (48, 0)],
-        "BackLeg": [(1, 0), (25, -2), (48, 0)],
+        "FrontLeg": [(1, 0), (25, 1), (48, 0)],
+        "BackLeg": [(1, 0), (25, -1), (48, 0)],
         "Tail": [(1, 4), (25, -6), (48, 4)],
     })
 

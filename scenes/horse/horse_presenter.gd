@@ -21,10 +21,12 @@ func _process(_delta: float) -> void:
 	if cam == null:
 		return
 	var here := global_position
-	var look := cam.global_position
-	look.y = here.y
-	if look.distance_to(here) > 0.05:
-		look_at(look, Vector3.UP)
+	var cam_xz := cam.global_position
+	cam_xz.y = here.y
+	## Mesh faces +Z. look_at aims -Z, so aim away from the camera.
+	var away := here + (here - cam_xz)
+	if away.distance_to(here) > 0.05:
+		look_at(away, Vector3.UP)
 
 
 func setup(horse) -> void:
