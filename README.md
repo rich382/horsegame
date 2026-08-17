@@ -4,7 +4,15 @@ A single-player Hunter/Jumper farm and show career game, built in Godot 4.7.
 
 You run a small show barn: care for horses, school them at home, haul to the **Ashford County Schooling Show**, and grow from a four-stall starter farm into a competitive H/J program. This is a management sim with a cinematic course-run, not a riding-physics game.
 
-Design spec: [`docs/DESIGN.md`](docs/DESIGN.md).
+**Repo:** https://github.com/rich382/horsegame
+
+| Doc | Path |
+|---|---|
+| Design spec | [`docs/DESIGN.md`](docs/DESIGN.md) |
+| Changelog | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) |
+| Session logs | [`docs/log/`](docs/log/) |
+
+Durable notes go in `docs/`. Do not leave design or session records only in temp folders.
 
 ## Requirements
 
@@ -25,7 +33,7 @@ Headless smoke:
 godot --headless --path . --quit-after 2
 ```
 
-Esc quits the boot scene.
+Esc opens the pause menu (Resume, Sleep until morning, Save, Quit).
 
 ## Vertical slice
 
