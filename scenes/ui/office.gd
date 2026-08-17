@@ -5,6 +5,7 @@ const Barn := preload("res://src/barn/barn_system.gd")
 const Circuit := preload("res://src/show/circuit.gd")
 
 signal ashford_done(payload)
+signal watch_show(show_id)
 
 @onready var _body: Label = $Center/Card/Margin/VBox/Body
 @onready var _jobs: VBoxContainer = $Center/Card/Margin/VBox/Scroll/Jobs
@@ -55,13 +56,16 @@ func _rebuild_jobs() -> void:
 	_add_btn("Buy a prospect  —  $3,200", _on_prospect)
 	_add_btn("Sell the selected horse", _on_sell)
 	_add_btn("Hire a working student  —  $90/wk", _on_help)
+	_add_btn("Mark selected as dam", _on_dam)
+	_add_btn("Breed dam to selected stallion  —  $250", _on_breed)
 	for job in Barn.HAUL_JOBS:
 		var jid := String(job["id"])
 		_add_btn("%s  —  $%d" % [job["label"], int(job["pay"])], func() -> void: _on_haul(jid))
 	for show in Circuit.SHOWS:
 		var sid := String(show["id"])
 		_add_btn("Load trailer — %s" % show["name"], func() -> void: _on_load(sid))
-		_add_btn("%s · %s" % [show["name"], show["class_label"]], func() -> void: _on_show(sid))
+		_add_btn("Watch %s · %s" % [show["name"], show["class_label"]], func() -> void: _on_watch(sid))
+		_add_btn("Simulate %s" % show["class_label"], func() -> void: _on_show(sid))
 
 
 func _add_btn(text: String, cb: Callable) -> void:
@@ -95,6 +99,21 @@ func _on_sell() -> void:
 func _on_help() -> void:
 	_toast(get_node("/root/Economy").hire_help())
 	_refresh()
+
+
+func _on_dam() -> void:
+	_toast(get_node("/root/Economy").set_dam())
+	_refresh()
+
+
+func _on_breed() -> void:
+	_toast(get_node("/root/Economy").breed_selected())
+	_refresh()
+
+
+func _on_watch(show_id: String) -> void:
+	visible = false
+	watch_show.emit(show_id)
 
 
 func _on_haul(job_id: String) -> void:

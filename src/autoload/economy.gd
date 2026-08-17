@@ -5,6 +5,8 @@ const Barn := preload("res://src/barn/barn_system.gd")
 const Ashford := preload("res://src/show/ashford.gd")
 const Circuit := preload("res://src/show/circuit.gd")
 const HorseFactoryScript := preload("res://src/horse/horse_factory.gd")
+const Breeding := preload("res://src/horse/breeding_system.gd")
+const Quests := preload("res://src/quest/quest_system.gd")
 
 const PROSPECT_COST := 3200
 const HELP_WEEK := 90
@@ -244,7 +246,9 @@ func buy_indoor() -> String:
 
 
 func take_boarder() -> String:
-	return Barn.take_boarder(get_node("/root/GameState").data)
+	var msg := Barn.take_boarder(get_node("/root/GameState").data)
+	Quests.note_boarder(get_node("/root/GameState").data)
+	return msg
 
 
 func collect_board() -> String:
@@ -309,7 +313,58 @@ func enter_show(show_id: String) -> Dictionary:
 	out["ok"] = true
 	out["msg"] = msg
 	out["title"] = "%s · %s" % [show.get("name", "Show"), show.get("class_label", "")]
+	Quests.note_ribbon(gs.data, String(show.get("id", "")), placing)
 	return out
+
+
+func pay_show_entry(show_id: String) -> Dictionary:
+	var gs := get_node("/root/GameState")
+	var horse = _selected()
+	var show: Dictionary = Circuit.show_by_id(show_id)
+	var gate: Dictionary = Circuit.enter_quote(gs.data, horse, show)
+	if not bool(gate.get("ok", false)):
+		return gate
+	var need := int(gate.get("need", 0))
+	if not post(&"show", -need, "%s entry + haul" % show.get("name", "Show")):
+		return {"ok": false, "msg": "Couldn't post entry."}
+	gs.data.farm["loaded_for"] = ""
+	gate["show"] = show
+	gate["horse"] = horse
+	return gate
+
+
+func pay_prize(show_name: String, prize: int, show_id: String, placing: int) -> void:
+	if prize > 0:
+		post(&"prize", prize, "%s ribbon" % show_name)
+	var gs := get_node("/root/GameState")
+	Quests.note_ribbon(gs.data, show_id, placing)
+
+
+func set_dam() -> String:
+	var h = _selected()
+	if h == null:
+		return "No horse."
+	if int(h.sex) != 0: ## Enums.Sex.MARE
+		return "Mark a mare as the dam."
+	get_node("/root/GameState").data.farm["dam_uid"] = String(h.uid)
+	return "%s is marked as the dam." % h.name
+
+
+func breed_selected() -> String:
+	var gs := get_node("/root/GameState")
+	var sire = _selected()
+	var dam_uid := String(gs.data.farm.get("dam_uid", ""))
+	var dam = null
+	for h in gs.data.horses:
+		if String(h.uid) == dam_uid:
+			dam = h
+			break
+	var why := Breeding.can_breed(dam, sire)
+	if why != "":
+		return why
+	if not post(&"breed", -Breeding.STUD_FEE, "Cover"):
+		return "Can't cover the stud fee ($%d)." % Breeding.STUD_FEE
+	return Breeding.cover(dam, sire, gs.data.clock.abs_day())
 
 
 func buy_prospect() -> String:
@@ -325,6 +380,7 @@ func buy_prospect() -> String:
 	stall["occupant_uid"] = h.uid
 	gs.data.horses.append(h)
 	gs.data.farm["selected_uid"] = String(h.uid)
+	Quests.note_string(gs.data)
 	return "%s is on the card. Green, cheap, yours." % h.name
 
 

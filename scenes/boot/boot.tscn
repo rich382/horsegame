@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scenes/boot/boot.gd" id="1_boot"]
 [ext_resource type="Script" path="res://scenes/boot/orbit_camera.gd" id="2_cam"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/school.tscn" id="10_school"]
 [ext_resource type="PackedScene" path="res://scenes/ui/recap.tscn" id="11_recap"]
 [ext_resource type="PackedScene" path="res://scenes/ui/office.tscn" id="12_office"]
+[ext_resource type="PackedScene" path="res://scenes/show/theater.tscn" id="13_th"]
 
 [sub_resource type="Environment" id="Environment_boot"]
 background_mode = 1
@@ -36,6 +37,8 @@ script = ExtResource("4_yard")
 
 [node name="HorsePresenter" parent="." instance=ExtResource("5_horse")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.03, 2.5)
+
+[node name="StringHorses" type="Node3D" parent="."]
 
 [node name="PlayerAvatar" parent="." instance=ExtResource("8_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 0, -2.2)
@@ -86,6 +89,15 @@ theme_override_colors/font_color = Color(0.93, 0.93, 0.88, 1)
 theme_override_font_sizes/font_size = 16
 text = "Cash $10000"
 horizontal_alignment = 2
+
+[node name="Quest" type="Label" parent="HUD"]
+offset_left = 28.0
+offset_top = 220.0
+offset_right = 720.0
+offset_bottom = 248.0
+theme_override_colors/font_color = Color(0.90, 0.86, 0.74, 1)
+theme_override_font_sizes/font_size = 15
+text = ""
 
 [node name="Toast" type="Label" parent="HUD"]
 anchors_preset = 7
@@ -228,6 +240,8 @@ text = "Pause (P)"
 [node name="School" parent="." instance=ExtResource("10_school")]
 
 [node name="Office" parent="." instance=ExtResource("12_office")]
+
+[node name="Theater" parent="." instance=ExtResource("13_th")]
 
 [node name="Recap" parent="." instance=ExtResource("11_recap")]
 

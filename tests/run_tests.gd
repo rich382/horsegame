@@ -13,6 +13,8 @@ const TestTrainingSystem := preload("res://tests/test_training_system.gd")
 const TestHorsePresenter := preload("res://tests/test_horse_presenter.gd")
 const TestJumperJudge := preload("res://tests/test_jumper_judge.gd")
 const TestBarnBusiness := preload("res://tests/test_barn_business.gd")
+const TestBreeding := preload("res://tests/test_breeding.gd")
+const TestHunter := preload("res://tests/test_hunter.gd")
 
 var _ran := false
 
@@ -34,6 +36,8 @@ func _process(_delta: float) -> bool:
 	fails += TestHorsePresenter.run()
 	fails += TestJumperJudge.run()
 	fails += TestBarnBusiness.run()
+	fails += TestBreeding.run()
+	fails += TestHunter.run()
 	if fails > 0:
 		push_error("TESTS FAILED: %d assertion(s)" % fails)
 		quit(1)

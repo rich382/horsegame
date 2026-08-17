@@ -7,6 +7,10 @@ const Training := preload("res://src/training/training_system.gd")
 const ShowResolver := preload("res://src/show/show_resolver.gd")
 const CourseDefScript := preload("res://src/show/course_def.gd")
 const ClassDefScript := preload("res://src/show/class_def.gd")
+const Circuit := preload("res://src/show/circuit.gd")
+const JumperJudge := preload("res://src/show/jumper_judge.gd")
+const HunterJudge := preload("res://src/show/hunter_judge.gd")
+const Quests := preload("res://src/quest/quest_system.gd")
 const STALL_POS := Vector3(-8.2, 0.0, -4.0)
 const PADDOCK_POS := Vector3(-10.5, 0.0, 3.6)
 const ARENA_POS := Vector3(6.5, 0.0, 2.0)
@@ -29,9 +33,15 @@ const Enums := preload("res://src/core/enums.gd")
 @onready var _school: CanvasLayer = $School
 @onready var _school_work: HBoxContainer = $HUD/SchoolWork
 @onready var _recap: CanvasLayer = $Recap
+@onready var _theater: CanvasLayer = $Theater
+@onready var _quest_label: Label = $HUD/Quest
+@onready var _string_root: Node3D = $StringHorses
 
 var _session := false
 var _pending_recap = null
+var _choice := 0
+var _got_choice := false
+var _skip_show := false
 
 
 func _ready() -> void:
@@ -52,6 +62,11 @@ func _ready() -> void:
 	_school.picked.connect(_on_school_picked)
 	if _office and _office.has_signal("ashford_done"):
 		_office.ashford_done.connect(_on_ashford_done)
+	if _office and _office.has_signal("watch_show"):
+		_office.watch_show.connect(_on_watch_show)
+	if _theater:
+		_theater.decided.connect(_on_theater_decided)
+		_theater.skipped.connect(_on_theater_skip)
 	if _school.has_signal("closed"):
 		_school.closed.connect(_hide_school_choices)
 	if _school_work:
@@ -125,8 +140,11 @@ func _refresh_clock() -> void:
 		int(farm.get("grain_days", 0)),
 		farm.get("boarders", []).size(),
 	]
+	if _quest_label:
+		_quest_label.text = Quests.hud_line(gs.data)
 	_refresh_sheet()
 	_place_horse()
+	_sync_string()
 	if _yard.has_method("build"):
 		_yard.build(farm)
 
@@ -231,7 +249,10 @@ func _horse_index() -> int:
 func _on_feed() -> void:
 	_send_to_chore(_beside_horse(), func() -> void:
 		var gs := get_node("/root/GameState")
-		_on_toast(Care.feed(gs.data, _horse_state()))
+		var msg := Care.feed(gs.data, _horse_state())
+		_on_toast(msg)
+		if "tucks" in msg:
+			Quests.note_feed(gs.data, _horse_state())
 		_refresh_clock()
 	)
 
@@ -501,3 +522,157 @@ func _on_yard_clicked(screen_pos: Vector2) -> void:
 	var at: Vector3 = hit.get("position", Vector3.ZERO)
 	if _player and _player.has_method("walk_to"):
 		_player.walk_to(at)
+
+
+func _sync_string() -> void:
+	if _string_root == null:
+		return
+	if _horse.has_method("is_busy") and _horse.is_busy():
+		return
+	for c in _string_root.get_children():
+		c.queue_free()
+	var gs := get_node("/root/GameState")
+	if gs.data == null:
+		return
+	var packed := load("res://scenes/horse/horse_presenter.tscn")
+	if packed == null:
+		return
+	var sel = _horse_state()
+	for h in gs.data.horses:
+		if h == null or h == sel:
+			continue
+		var n: Node3D = packed.instantiate()
+		_string_root.add_child(n)
+		if n.has_method("setup"):
+			n.setup(h)
+		if bool(h.turned_out):
+			n.position = PADDOCK_POS + Vector3(1.8, 0, 1.2)
+		else:
+			n.position = _stall_pos(h)
+
+
+func _on_theater_decided(kind: int) -> void:
+	_choice = kind
+	_got_choice = true
+
+
+func _on_theater_skip() -> void:
+	_skip_show = true
+	_choice = Enums.Approach.STAY
+	_got_choice = true
+
+
+func _on_watch_show(show_id: String) -> void:
+	if _session:
+		_on_toast("Still in the ring.")
+		return
+	_run_watch_show(show_id)
+
+
+func _run_watch_show(show_id: String) -> void:
+	var econ := get_node("/root/Economy")
+	var paid: Dictionary = econ.pay_show_entry(show_id)
+	if not bool(paid.get("ok", false)):
+		_on_toast(String(paid.get("msg", "Can't go in.")))
+		if _office:
+			_office.open()
+		return
+	var show: Dictionary = paid.get("show", {})
+	var gs := get_node("/root/GameState")
+	var horse = _horse_state()
+	var course = CourseDefScript.ashford_080()
+	var cls = ClassDefScript.ashford_080()
+	cls.height_m = float(show.get("height_m", 0.80))
+	var hunter := bool(show.get("hunter", false))
+	if hunter:
+		cls.discipline = Enums.Discipline.HUNTER
+	if cls.height_m > 0.85:
+		for f in course.fences:
+			f.height_m = cls.height_m
+	_session = true
+	_skip_show = false
+	var events: Array = []
+	var prev = null
+	var i := 0
+	var n: int = course.fences.size()
+	var disob := 0
+	var spots := [
+		Vector3(6.2, 0.0, 1.4),
+		Vector3(6.2, 0.0, -4.0),
+		Vector3(7.6, 0.0, 3.2),
+		Vector3(7.6, 0.0, 8.4),
+		Vector3(4.4, 0.0, 2.0),
+		Vector3(9.4, 0.0, 2.2),
+	]
+	_theater.open_card(String(show.get("name", "Show")), "Walk in. Stay, wait, or leave at each fence.")
+	while i < n:
+		var dest: Vector3 = spots[i % spots.size()]
+		if _horse.has_method("walk_to"):
+			_horse.walk_to(dest)
+		_theater.open_card("Fence %d" % (i + 1), "Stay · Wait · Leave")
+		var dec := Enums.Approach.STAY
+		if not _skip_show:
+			dec = await _wait_choice()
+		if _skip_show:
+			dec = Enums.Approach.STAY
+		var ev = ShowResolver.resolve_fence(
+			horse, float(gs.data.player.rider_skill), course.fences[i], i, prev, dec,
+			cls, course, float(show.get("footing", 45.0)), gs.sim_rng
+		)
+		events.append(ev)
+		_theater.show_event(ev.line())
+		if bool(ev.jump_to) if false else true:
+			if _horse.has_method("jump_to") and not bool(ev.refusal) and not bool(ev.runout):
+				_horse.jump_to(dest + Vector3(0, 0, -2.2))
+		if bool(ev.fall):
+			break
+		if bool(ev.refusal) or bool(ev.runout):
+			disob += 1
+			if disob >= int(cls.refusal_elim_after):
+				break
+			prev = ev
+			continue
+		prev = ev
+		i += 1
+	if not (disob >= int(cls.refusal_elim_after)):
+		var fin = ShowResolver.resolve_fence(
+			horse, float(gs.data.player.rider_skill), null, n, prev, Enums.Approach.STAY,
+			cls, course, float(show.get("footing", 45.0)), gs.sim_rng
+		)
+		events.append(fin)
+	var result
+	if hunter:
+		result = HunterJudge.finalize(horse, cls, course, events, gs.sim_rng)
+	else:
+		result = JumperJudge.finalize(horse, cls, course, events)
+	var field: Array = [result]
+	for ni in 7:
+		field.append(Circuit._one_trip(Circuit._npc(horse, ni), 32.0 + float(ni), course, cls, float(show.get("footing", 45.0)), gs.sim_rng, hunter))
+	if hunter:
+		field.sort_custom(func(a, b): return float(a.score) > float(b.score) if not bool(a.eliminated) else false)
+	else:
+		field.sort_custom(func(a, b): return int(a.faults) < int(b.faults) if not bool(a.eliminated) else not bool(a.eliminated))
+	var placing := 1
+	for fi in field.size():
+		if field[fi] == result:
+			placing = fi + 1
+			break
+	var prize := 0
+	if placing >= 1 and placing <= Circuit.PRIZES.size():
+		prize = int(Circuit.PRIZES[placing - 1])
+	result.placing = placing
+	result.prize = prize
+	econ.pay_prize(String(show.get("name", "Show")), prize, String(show.get("id", "")), placing)
+	_theater.close()
+	_session = false
+	if _recap:
+		_recap.open_result(result, "%s · %s" % [show.get("name", ""), show.get("class_label", "")])
+	_on_toast("Placed %d. %s" % [placing, ("+$%d" % prize) if prize > 0 else "No check."])
+	_refresh_clock()
+
+
+func _wait_choice() -> int:
+	_got_choice = false
+	while not _got_choice:
+		await get_tree().process_frame
+	return _choice

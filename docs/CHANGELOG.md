@@ -8,7 +8,10 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 - Own a string: buy a green prospect ($3,200), sell a made horse, switch with < >.
 - Working student ($90/week) picks stalls. Overdue farrier drops hoof.
-- Circuit: Ashford Saturday 0.80, Crossridge Sunday 0.80, Mill Brook Saturday 0.90. Load the trailer the evening before.
+- Circuit: Ashford Saturday 0.80, Crossridge Sunday 0.80, Mill Brook Saturday 0.90, Ashford 2'6" hunter, Willow Park 1.00 m. Load the trailer the evening before.
+- Breeding: mark a mare, cover with a stallion ($250), foal in 21 days.
+- Watch a class: Stay / Wait / Leave at each fence. Skip = all Stay.
+- Hunter score. Quests on the HUD. Pause: load slot 1 / new game. Whole string stands in the aisle.
 
 ### Added
 

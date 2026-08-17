@@ -54,3 +54,8 @@ extends Resource
 @export var injuries: Array = []
 @export var genome: HorseGenome
 @export var records: Array = []
+@export var in_foal: bool = false
+@export var foal_due_abs: int = -1
+@export var sire_name: String = ""
+@export var pending_sire_pairs: Dictionary = {}
+@export var pending_sire_coat: int = 0

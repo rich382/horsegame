@@ -95,7 +95,7 @@ static func resolve_fence(
 	return ev
 
 
-static func resolve_trip(
+static func resolve_events(
 	horse,
 	rider_skill: float,
 	course,
@@ -103,7 +103,7 @@ static func resolve_trip(
 	decisions: Array,
 	footing_quality: float,
 	rng
-):
+) -> Array:
 	var events: Array = []
 	var prev = null
 	var i := 0
@@ -133,6 +133,21 @@ static func resolve_trip(
 			horse, rider_skill, null, n, prev, Enums.Approach.STAY, class_def, course, footing_quality, rng
 		)
 		events.append(fin)
+	return events
+
+
+static func resolve_trip(
+	horse,
+	rider_skill: float,
+	course,
+	class_def,
+	decisions: Array,
+	footing_quality: float,
+	rng
+):
+	var events: Array = resolve_events(
+		horse, rider_skill, course, class_def, decisions, footing_quality, rng
+	)
 	return JumperJudgeScript.finalize(horse, class_def, course, events)
 
 

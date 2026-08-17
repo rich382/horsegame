@@ -53,3 +53,20 @@ func _on_save() -> void:
 func _on_quit() -> void:
 	get_tree().paused = false
 	get_tree().quit()
+
+
+func _on_load() -> void:
+	var err: Error = get_node("/root/SaveService").load_slot(1)
+	close()
+	if err == OK:
+		get_node("/root/EventBus").toast.emit("Loaded slot 1.")
+		get_tree().reload_current_scene()
+	else:
+		get_node("/root/EventBus").toast.emit("No save in slot 1.")
+
+
+func _on_new_game() -> void:
+	var cfg = load("res://src/core/game_config.gd").new()
+	get_node("/root/GameState").new_game(cfg)
+	close()
+	get_tree().reload_current_scene()

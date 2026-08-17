@@ -91,6 +91,13 @@ static func make_prospect(rng) -> HorseState:
 	if rng:
 		ni = rng.randi_range(0, PROSPECT_NAMES.size() - 1)
 		h.coat = STARTER_COATS[rng.randi_range(0, STARTER_COATS.size() - 1)]
+		var sx: int = rng.randi_range(0, 9)
+		if sx < 4:
+			h.sex = Enums.Sex.MARE
+		elif sx < 7:
+			h.sex = Enums.Sex.STALLION
+		else:
+			h.sex = Enums.Sex.GELDING
 	h.name = PROSPECT_NAMES[ni]
 	h.barn_name = h.name.substr(0, mini(8, h.name.length()))
 	h.def_id = &"prospect"

@@ -6,6 +6,8 @@ const ShowResolver := preload("res://src/show/show_resolver.gd")
 const CourseDefScript := preload("res://src/show/course_def.gd")
 const ClassDefScript := preload("res://src/show/class_def.gd")
 const HorseStateScript := preload("res://src/horse/horse_state.gd")
+const HunterJudge := preload("res://src/show/hunter_judge.gd")
+const JumperJudge := preload("res://src/show/jumper_judge.gd")
 
 const HAUL_OWN := 40
 const HAUL_SHIP := 120
@@ -38,6 +40,25 @@ const SHOWS := [
 		"height_m": 0.90,
 		"footing": 48.0,
 		"entry": 55,
+	},
+	{
+		"id": "ashford_hu",
+		"name": "Ashford County Schooling",
+		"class_label": "2'6\" Hunter",
+		"weekday": Enums.Weekday.SAT,
+		"height_m": 0.76,
+		"footing": 45.0,
+		"entry": 45,
+		"hunter": true,
+	},
+	{
+		"id": "willow",
+		"name": "Willow Park",
+		"class_label": "1.00 m Jumper",
+		"weekday": Enums.Weekday.SUN,
+		"height_m": 1.00,
+		"footing": 50.0,
+		"entry": 65,
 	},
 ]
 
@@ -98,13 +119,18 @@ static func ride(data, horse, rng, show: Dictionary) -> Dictionary:
 	if float(show["height_m"]) > 0.85:
 		for f in course.fences:
 			f.height_m = float(show["height_m"])
-	var player = ShowResolver.resolve_trip(
-		horse, float(data.player.rider_skill), course, cls, [], float(show["footing"]), rng
-	)
+	var hunter := bool(show.get("hunter", false))
+	if hunter:
+		cls.discipline = Enums.Discipline.HUNTER
+		cls.height_label = "2'6\""
+	var player = _one_trip(horse, float(data.player.rider_skill), course, cls, float(show["footing"]), rng, hunter)
 	var field: Array = [player]
 	for i in 7:
-		field.append(ShowResolver.resolve_trip(_npc(horse, i), 32.0 + float(i), course, cls, [], float(show["footing"]), rng))
-	field.sort_custom(func(a, b): return _better(a, b))
+		field.append(_one_trip(_npc(horse, i), 32.0 + float(i), course, cls, float(show["footing"]), rng, hunter))
+	if hunter:
+		field.sort_custom(func(a, b): return _better_hunter(a, b))
+	else:
+		field.sort_custom(func(a, b): return _better(a, b))
 	var placing := 0
 	for i in field.size():
 		if field[i] == player:
@@ -149,6 +175,19 @@ static func _day_name(d: int) -> String:
 	if d < 0 or d >= names.size():
 		return "show day"
 	return names[d]
+
+
+static func _one_trip(horse, rider: float, course, cls, footing: float, rng, hunter: bool):
+	var events: Array = ShowResolver.resolve_events(horse, rider, course, cls, [], footing, rng)
+	if hunter:
+		return HunterJudge.finalize(horse, cls, course, events, rng)
+	return JumperJudge.finalize(horse, cls, course, events)
+
+
+static func _better_hunter(a, b) -> bool:
+	if bool(a.eliminated) != bool(b.eliminated):
+		return not bool(a.eliminated)
+	return float(a.score) > float(b.score)
 
 
 static func _better(a, b) -> bool:

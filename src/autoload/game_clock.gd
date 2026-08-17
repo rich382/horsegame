@@ -4,6 +4,7 @@ extends Node
 const Enums := preload("res://src/core/enums.gd")
 const CareSystemScript := preload("res://src/care/care_system.gd")
 const TrainingSystemScript := preload("res://src/training/training_system.gd")
+const Breeding := preload("res://src/horse/breeding_system.gd")
 
 
 func _gs() -> Node:
@@ -31,6 +32,7 @@ func advance_phase() -> void:
 		_collect_board()
 		_pay_help()
 		CareSystemScript.help_pick_all(_gs().data)
+		_tick_foals()
 		_bus().day_started.emit(clock)
 		_bus().phase_started.emit(Enums.Phase.MORNING)
 	else:
@@ -65,6 +67,12 @@ func _pay_help() -> void:
 		var msg: String = String(econ.pay_help())
 		if msg != "":
 			_bus().toast.emit(msg)
+
+
+func _tick_foals() -> void:
+	var notes := Breeding.tick(_gs().data, _gs().sim_rng)
+	for n in notes:
+		_bus().toast.emit(n)
 
 
 func _run_night_bundle() -> void:
