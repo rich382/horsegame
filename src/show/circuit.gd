@@ -97,7 +97,7 @@ static func block_reason(data, horse, show: Dictionary) -> String:
 	if float(horse.schooled_height_m) + 0.20 < ht:
 		return "That's a cruelty. School them first."
 	var need := int(show["entry"]) + haul_cost(data.farm, String(show["id"]))
-	if int(data.player.cash) < need:
+	if int(data.player.cash) < need and not bool(data.farm.get("debug_unlimited_cash", false)):
 		return "Can't cover entry and haul ($%d)." % need
 	return ""
 

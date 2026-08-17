@@ -78,6 +78,29 @@ static func run() -> int:
 		push_error("economy: broke hay should refuse (%s)" % broke)
 		fails += 1
 
+	var hay0 := int(gs.data.farm.get("hay_days", 0))
+	var granted: String = econ.grant_playtest_cash()
+	if not bool(gs.data.farm.get("debug_unlimited_cash", false)):
+		push_error("economy: playtest till flag missing (%s)" % granted)
+		fails += 1
+	if int(gs.data.player.cash) != 999999:
+		push_error("economy: playtest cash=%d want 999999" % int(gs.data.player.cash))
+		fails += 1
+	var rich: String = econ.buy_hay()
+	if int(gs.data.farm.get("hay_days", 0)) != hay0 + 7:
+		push_error("economy: playtest hay failed (%s)" % rich)
+		fails += 1
+	if int(gs.data.player.cash) != 999999:
+		push_error("economy: playtest buy should not drain cash")
+		fails += 1
+	gs.new_game(cfg)
+	if int(gs.data.player.cash) != 10000:
+		push_error("economy: new_game should reset playtest cash")
+		fails += 1
+	if bool(gs.data.farm.get("debug_unlimited_cash", false)):
+		push_error("economy: new_game should clear playtest till")
+		fails += 1
+
 	if fails == 0:
 		print("test_economy: ok")
 	return fails

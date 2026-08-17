@@ -80,7 +80,10 @@ func _ready() -> void:
 	if next_b and not next_b.pressed.is_connected(_on_next_horse):
 		next_b.pressed.connect(_on_next_horse)
 	_refresh_clock()
-	_on_toast("Name your horse. Feed, school in the afternoon, shop when the loft runs low.")
+	var econ := get_node_or_null("/root/Economy")
+	if econ and econ.has_method("grant_playtest_cash"):
+		econ.grant_playtest_cash()
+	_on_toast("Playtest till is open. Name your horse, then buy whatever.")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -101,6 +104,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		KEY_BRACKETRIGHT, KEY_PERIOD:
 			_on_next_horse()
+			get_viewport().set_input_as_handled()
+		KEY_F9:
+			var econ := get_node_or_null("/root/Economy")
+			if econ and econ.has_method("grant_playtest_cash"):
+				_on_toast(econ.grant_playtest_cash())
 			get_viewport().set_input_as_handled()
 
 

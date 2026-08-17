@@ -27,12 +27,33 @@ const TRUCK_COST := 8500
 const TRAILER_COST := 4200
 const WING_COST := 12000
 const INDOOR_COST := 15000
+const PLAYTEST_CASH := 999999
+
+
+func unlimited() -> bool:
+	var gs := get_node("/root/GameState")
+	if gs.data == null:
+		return false
+	return bool(gs.data.farm.get("debug_unlimited_cash", false))
+
+
+func grant_playtest_cash() -> String:
+	var gs := get_node("/root/GameState")
+	if gs.data == null or gs.data.player == null:
+		return "No game."
+	gs.data.farm["debug_unlimited_cash"] = true
+	var bump: int = PLAYTEST_CASH - int(gs.data.player.cash)
+	if bump > 0:
+		post(&"debug", bump, "Playtest till")
+	return "Playtest till is open. Buy whatever."
 
 
 func can_afford(amount: int) -> bool:
 	var gs := get_node("/root/GameState")
 	if gs.data == null or gs.data.player == null:
 		return false
+	if unlimited():
+		return true
 	return int(gs.data.player.cash) + amount >= 0 if amount < 0 else true
 
 
@@ -40,9 +61,12 @@ func post(category: StringName, amount: int, note: String) -> bool:
 	var gs := get_node("/root/GameState")
 	if gs.data == null or gs.data.player == null:
 		return false
-	if amount < 0 and int(gs.data.player.cash) + amount < 0:
+	if amount < 0 and not unlimited() and int(gs.data.player.cash) + amount < 0:
 		return false
-	gs.data.player.cash = int(gs.data.player.cash) + amount
+	if unlimited() and amount < 0:
+		gs.data.player.cash = PLAYTEST_CASH
+	else:
+		gs.data.player.cash = int(gs.data.player.cash) + amount
 	var clock = gs.data.clock
 	var entry := {
 		"when": clock.to_dict() if clock else {},
