@@ -123,9 +123,10 @@ func buy_footing() -> String:
 	var farm: Dictionary = get_node("/root/GameState").data.farm
 	if int(farm.get("footing_quality", 40)) >= 65:
 		return "Footing is already upgraded."
-	if not post(&"shop", -FOOTING_COST, "Arena footing"):
-		return "Can't cover footing ($%d)." % FOOTING_COST
 	farm["footing_quality"] = 65
+	if not post(&"shop", -FOOTING_COST, "Arena footing"):
+		farm["footing_quality"] = 40
+		return "Can't cover footing ($%d)." % FOOTING_COST
 	return "New fiber mix. Home arena rides better."
 
 
@@ -180,10 +181,11 @@ func buy_drag() -> String:
 	var farm: Dictionary = get_node("/root/GameState").data.farm
 	if bool(farm.get("has_drag", false)):
 		return "Already have a drag."
-	if not post(&"shop", -DRAG_COST, "Arena drag"):
-		return "Can't cover a drag ($%d)." % DRAG_COST
 	farm["has_drag"] = true
 	farm["training_efficiency"] = maxf(float(farm.get("training_efficiency", 0.15)), 0.20)
+	if not post(&"shop", -DRAG_COST, "Arena drag"):
+		farm["has_drag"] = false
+		return "Can't cover a drag ($%d)." % DRAG_COST
 	return "Drag's in the shed. Home school rides truer."
 
 
@@ -191,9 +193,10 @@ func buy_jumps() -> String:
 	var farm: Dictionary = get_node("/root/GameState").data.farm
 	if int(farm.get("jump_sets", 1)) >= 2:
 		return "Plenty of poles out there."
-	if not post(&"shop", -JUMPS_COST, "Extra jump set"):
-		return "Can't cover jumps ($%d)." % JUMPS_COST
 	farm["jump_sets"] = 2
+	if not post(&"shop", -JUMPS_COST, "Extra jump set"):
+		farm["jump_sets"] = 1
+		return "Can't cover jumps ($%d)." % JUMPS_COST
 	return "Another set of standards. You can build a real line."
 
 
@@ -201,9 +204,10 @@ func buy_truck() -> String:
 	var farm: Dictionary = get_node("/root/GameState").data.farm
 	if bool(farm.get("has_truck", false)):
 		return "Truck's already in the drive."
-	if not post(&"shop", -TRUCK_COST, "Used diesel"):
-		return "Can't cover the truck ($%d)." % TRUCK_COST
 	farm["has_truck"] = true
+	if not post(&"shop", -TRUCK_COST, "Used diesel"):
+		farm["has_truck"] = false
+		return "Can't cover the truck ($%d)." % TRUCK_COST
 	return "Red truck is in the drive by the barn. Needs a trailer."
 
 
@@ -211,10 +215,12 @@ func buy_trailer() -> String:
 	var farm: Dictionary = get_node("/root/GameState").data.farm
 	if bool(farm.get("has_trailer", false)):
 		return "Already have a two-horse."
-	if not post(&"shop", -TRAILER_COST, "Two-horse trailer"):
-		return "Can't cover the trailer ($%d)." % TRAILER_COST
 	farm["has_trailer"] = true
 	farm["trailer_capacity"] = 2
+	if not post(&"shop", -TRAILER_COST, "Two-horse trailer"):
+		farm["has_trailer"] = false
+		farm["trailer_capacity"] = 0
+		return "Can't cover the trailer ($%d)." % TRAILER_COST
 	return "Two-horse is hitched in the drive, behind the truck."
 
 
@@ -222,9 +228,10 @@ func buy_barn_wing() -> String:
 	var farm: Dictionary = get_node("/root/GameState").data.farm
 	if int(farm.get("barn_tier", 1)) >= 2:
 		return "The eight-stall is already up."
-	if not post(&"shop", -WING_COST, "Four-stall barn wing"):
-		return "Can't cover the wing ($%d)." % WING_COST
 	farm["barn_tier"] = 2
+	if not post(&"shop", -WING_COST, "Four-stall barn wing"):
+		farm["barn_tier"] = 1
+		return "Can't cover the wing ($%d)." % WING_COST
 	var stalls: Array = farm.get("stalls", [])
 	var start := stalls.size()
 	for i in 4:
@@ -238,10 +245,11 @@ func buy_indoor() -> String:
 	var farm: Dictionary = get_node("/root/GameState").data.farm
 	if bool(farm.get("has_indoor", false)):
 		return "Indoor's already framed."
-	if not post(&"shop", -INDOOR_COST, "Covered arena"):
-		return "Can't cover an indoor ($%d)." % INDOOR_COST
 	farm["has_indoor"] = true
 	farm["training_efficiency"] = maxf(float(farm.get("training_efficiency", 0.15)), 0.24)
+	if not post(&"shop", -INDOOR_COST, "Covered arena"):
+		farm["has_indoor"] = false
+		return "Can't cover an indoor ($%d)." % INDOOR_COST
 	return "Roof over the ring. You can school when it blows."
 
 

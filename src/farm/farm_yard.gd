@@ -28,9 +28,12 @@ func build(farm: Dictionary = {}) -> void:
 	var trail_ok := (not bool(farm.get("has_trailer", false))) or get_node_or_null("TrailerBox") != null
 	if sig == _sig and get_child_count() > 0 and truck_ok and trail_ok:
 		return
+	_sig = ""
+	var old: Array = get_children()
+	for c in old:
+		remove_child(c)
+		c.free()
 	_sig = sig
-	for c in get_children():
-		c.queue_free()
 	_add_ground()
 	_add_arena(bool(farm.get("has_indoor", false)))
 	## Aisle faces the yard (+Z). Exporter maps Blender +Y → Godot −Z, so yaw 180°.
@@ -56,9 +59,9 @@ func build(farm: Dictionary = {}) -> void:
 	if bool(farm.get("has_truck", false)) or bool(farm.get("has_trailer", false)):
 		_add_drive()
 	if bool(farm.get("has_truck", false)):
-		_add_truck(Vector3(-4.8, 0.0, 0.6))
+		_add_truck(Vector3(-1.2, 0.0, 4.2))
 	if bool(farm.get("has_trailer", false)):
-		_add_trailer(Vector3(-4.8, 0.0, 4.4))
+		_add_trailer(Vector3(-1.2, 0.0, 8.2))
 
 
 func _mat(tex: Texture2D, uv: Vector3) -> StandardMaterial3D:
@@ -110,13 +113,13 @@ func _add_arena(indoor: bool) -> void:
 
 func _add_drive() -> void:
 	var mesh := PlaneMesh.new()
-	mesh.size = Vector2(5.5, 10.0)
+	mesh.size = Vector2(8.0, 14.0)
 	var inst := MeshInstance3D.new()
 	inst.name = "Drive"
 	inst.mesh = mesh
-	inst.position = Vector3(-4.8, 0.04, 2.4)
+	inst.position = Vector3(-1.2, 0.05, 6.2)
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.42, 0.40, 0.36)
+	mat.albedo_color = Color(0.62, 0.56, 0.42)
 	mat.roughness = 0.95
 	inst.material_override = mat
 	add_child(inst)
@@ -154,30 +157,30 @@ func _wheel(at: Vector3) -> void:
 
 
 func _add_truck(origin: Vector3) -> void:
-	var paint := Color(0.72, 0.22, 0.14)
+	var paint := Color(0.85, 0.16, 0.10)
 	var dark := Color(0.12, 0.12, 0.13)
-	_box("TruckBed", origin + Vector3(0, 0.72, 0.55), Vector3(2.05, 0.55, 2.4), paint)
-	_box("TruckCab", origin + Vector3(0, 1.05, -1.15), Vector3(2.0, 1.15, 1.35), paint)
-	_box("TruckHood", origin + Vector3(0, 0.72, -2.05), Vector3(1.9, 0.55, 0.7), paint)
-	_box("TruckGlass", origin + Vector3(0, 1.25, -1.55), Vector3(1.7, 0.45, 0.12), Color(0.55, 0.72, 0.82))
-	_box("TruckBumper", origin + Vector3(0, 0.38, -2.42), Vector3(2.0, 0.22, 0.16), dark)
-	_wheel(origin + Vector3(-1.05, 0.38, 1.15))
-	_wheel(origin + Vector3(1.05, 0.38, 1.15))
-	_wheel(origin + Vector3(-1.05, 0.38, -1.55))
-	_wheel(origin + Vector3(1.05, 0.38, -1.55))
+	_box("TruckBed", origin + Vector3(0, 0.95, 0.75), Vector3(2.6, 0.7, 3.1), paint)
+	_box("TruckCab", origin + Vector3(0, 1.4, -1.45), Vector3(2.55, 1.5, 1.7), paint)
+	_box("TruckHood", origin + Vector3(0, 0.95, -2.55), Vector3(2.4, 0.7, 0.9), paint)
+	_box("TruckGlass", origin + Vector3(0, 1.65, -2.05), Vector3(2.2, 0.55, 0.14), Color(0.55, 0.72, 0.82))
+	_box("TruckBumper", origin + Vector3(0, 0.45, -3.05), Vector3(2.55, 0.28, 0.2), dark)
+	_wheel(origin + Vector3(-1.35, 0.42, 1.45))
+	_wheel(origin + Vector3(1.35, 0.42, 1.45))
+	_wheel(origin + Vector3(-1.35, 0.42, -1.85))
+	_wheel(origin + Vector3(1.35, 0.42, -1.85))
 
 
 func _add_trailer(origin: Vector3) -> void:
-	var shell := Color(0.86, 0.84, 0.78)
+	var shell := Color(0.93, 0.90, 0.82)
 	var dark := Color(0.12, 0.12, 0.13)
-	_box("TrailerBox", origin + Vector3(0, 1.15, 0.2), Vector3(2.15, 1.85, 3.4), shell)
-	_box("TrailerWindow", origin + Vector3(0, 1.55, -1.45), Vector3(1.4, 0.45, 0.08), Color(0.35, 0.38, 0.40))
-	_box("TrailerHitch", origin + Vector3(0, 0.55, -1.85), Vector3(0.18, 0.18, 0.9), dark)
-	_box("TrailerRamp", origin + Vector3(0, 0.42, 2.05), Vector3(1.7, 0.08, 0.7), Color(0.35, 0.32, 0.28))
-	_wheel(origin + Vector3(-1.1, 0.38, 0.7))
-	_wheel(origin + Vector3(1.1, 0.38, 0.7))
-	_wheel(origin + Vector3(-1.1, 0.38, -0.5))
-	_wheel(origin + Vector3(1.1, 0.38, -0.5))
+	_box("TrailerBox", origin + Vector3(0, 1.45, 0.25), Vector3(2.7, 2.3, 4.2), shell)
+	_box("TrailerWindow", origin + Vector3(0, 1.95, -1.8), Vector3(1.8, 0.55, 0.1), Color(0.35, 0.38, 0.40))
+	_box("TrailerHitch", origin + Vector3(0, 0.62, -2.35), Vector3(0.22, 0.22, 1.1), dark)
+	_box("TrailerRamp", origin + Vector3(0, 0.48, 2.5), Vector3(2.1, 0.1, 0.85), Color(0.35, 0.32, 0.28))
+	_wheel(origin + Vector3(-1.4, 0.42, 0.9))
+	_wheel(origin + Vector3(1.4, 0.42, 0.9))
+	_wheel(origin + Vector3(-1.4, 0.42, -0.7))
+	_wheel(origin + Vector3(1.4, 0.42, -0.7))
 
 
 func _add_model(path: String, origin: Vector3, yaw: float = 0.0, scale: float = 1.0) -> void:

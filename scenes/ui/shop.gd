@@ -64,6 +64,12 @@ func _on_buy(id: String) -> void:
 	var msg: String = get_node("/root/Economy").buy(id)
 	get_node("/root/EventBus").toast.emit(msg)
 	_refresh()
+	var boot := get_tree().current_scene
+	if boot:
+		var yard = boot.get_node_or_null("Yard")
+		var gs := get_node("/root/GameState")
+		if yard and yard.has_method("build") and gs and gs.data:
+			yard.build(gs.data.farm)
 
 
 func _on_close() -> void:
