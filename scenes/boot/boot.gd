@@ -73,6 +73,12 @@ func _ready() -> void:
 		_school_work.visible = false
 	if _cam.has_signal("yard_clicked"):
 		_cam.yard_clicked.connect(_on_yard_clicked)
+	var prev_b := get_node_or_null("HUD/HorseSwitch/Prev")
+	var next_b := get_node_or_null("HUD/HorseSwitch/Next")
+	if prev_b and not prev_b.pressed.is_connected(_on_prev_horse):
+		prev_b.pressed.connect(_on_prev_horse)
+	if next_b and not next_b.pressed.is_connected(_on_next_horse):
+		next_b.pressed.connect(_on_next_horse)
 	_refresh_clock()
 	_on_toast("Name your horse. Feed, school in the afternoon, shop when the loft runs low.")
 
@@ -89,6 +95,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		KEY_F5:
 			_on_save()
+			get_viewport().set_input_as_handled()
+		KEY_BRACKETLEFT, KEY_COMMA:
+			_on_prev_horse()
+			get_viewport().set_input_as_handled()
+		KEY_BRACKETRIGHT, KEY_PERIOD:
+			_on_next_horse()
 			get_viewport().set_input_as_handled()
 
 
@@ -132,6 +144,9 @@ func _refresh_clock() -> void:
 	var sel = _horse_state()
 	if sel:
 		horse_name = String(sel.name)
+	var name_l := get_node_or_null("HUD/HorseSwitch/Name")
+	if name_l:
+		name_l.text = horse_name
 	var farm: Dictionary = gs.data.farm
 	_status_label.text = "%s   ·   $%d   ·   Hay %dd   ·   Grain %dd   ·   Board %d" % [
 		horse_name,
@@ -186,23 +201,29 @@ func _horse_state():
 
 
 func _on_next_horse() -> void:
-	get_node("/root/GameState").select_next(1)
-	var h = _horse_state()
-	if h and _horse.has_method("setup"):
-		_horse.setup(h)
-	_refresh_clock()
-	if h:
-		_on_toast("That's %s." % h.name)
+	_cycle_horse(1)
 
 
 func _on_prev_horse() -> void:
-	get_node("/root/GameState").select_next(-1)
+	_cycle_horse(-1)
+
+
+func _cycle_horse(step: int) -> void:
+	var gs := get_node("/root/GameState")
+	if gs.data == null or gs.data.horses.size() < 2:
+		_on_toast("Only one on the card. Buy a prospect in the Office.")
+		return
+	if gs.has_method("select_next"):
+		gs.select_next(step)
 	var h = _horse_state()
 	if h and _horse.has_method("setup"):
 		_horse.setup(h)
 	_refresh_clock()
 	if h:
-		_on_toast("That's %s." % h.name)
+		_on_toast("Working %s." % h.name)
+		var name_l := get_node_or_null("HUD/HorseSwitch/Name")
+		if name_l:
+			name_l.text = String(h.name)
 
 
 func _refresh_sheet() -> void:

@@ -86,6 +86,14 @@ static func run() -> int:
 	gs.data.player.cash = 20000
 	var n0: int = gs.data.horses.size()
 	var bought: String = econ.buy_prospect()
+	if gs.has_method("select_next") and gs.data.horses.size() >= 2:
+		var a = String(gs.selected_horse().uid)
+		if not bool(gs.select_next(1)):
+			push_error("barn: select_next refused with two horses")
+			fails += 1
+		elif String(gs.selected_horse().uid) == a:
+			push_error("barn: select_next did not change horse")
+			fails += 1
 	if gs.data.horses.size() != n0 + 1:
 		push_error("barn: prospect buy failed (%s)" % bought)
 		fails += 1

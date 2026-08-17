@@ -41,6 +41,9 @@ static func run() -> int:
 		if boot.get_node_or_null("HUD/Care/Shop") == null:
 			push_error("boot actions: Shop button missing")
 			fails += 1
+		if boot.get_node_or_null("HUD/HorseSwitch/Next") == null:
+			push_error("boot actions: horse switch missing")
+			fails += 1
 		if boot.get_node_or_null("HUD/Care/Office") == null:
 			push_error("boot actions: Office button missing")
 			fails += 1

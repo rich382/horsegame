@@ -62,20 +62,23 @@ func selected_horse():
 	return data.horses[0]
 
 
-func select_next(step: int = 1):
-	if data == null or data.horses.is_empty():
-		return
+func select_next(step: int = 1) -> bool:
+	if data == null or data.horses.size() < 2:
+		return false
+	var uid := String(data.farm.get("selected_uid", ""))
 	var i := 0
-	var cur = selected_horse()
 	for n in data.horses.size():
-		if data.horses[n] == cur:
+		var h = data.horses[n]
+		if h != null and String(h.uid) == uid:
 			i = n
 			break
-	i = (i + step) % data.horses.size()
+	var nmax: int = data.horses.size()
+	i = (i + step) % nmax
 	if i < 0:
-		i += data.horses.size()
+		i += nmax
 	data.farm["selected_uid"] = String(data.horses[i].uid)
 	_bus().clock_changed.emit()
+	return true
 
 
 func replace_data(d) -> void:
