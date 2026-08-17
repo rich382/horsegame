@@ -16,6 +16,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 - Replaced billboard barn/jump/fence with Blender 3D meshes. Horse is the Quaternius 3D model, planted on the grass.
 - Daily care: feed, pick stall, turnout, groom, horse sheet. Hunger follows the design table.
 - Owner-rider walks to each chore and does it (KayKit Ranger). Click the yard to walk.
+- Fixed in-place walk: used integer `mini` for a float step.
 
 ### Added
 

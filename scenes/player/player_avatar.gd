@@ -63,7 +63,7 @@ func _process(dt: float) -> void:
 	delta.y = 0.0
 	var dist := delta.length()
 	if dist > ARRIVE:
-		var step := mini(dist, WALK_MPS * dt)
+		var step := minf(dist, WALK_MPS * dt)
 		global_position = here + delta.normalized() * step
 		if dist > 0.05:
 			var look := global_position + delta
