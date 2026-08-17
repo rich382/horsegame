@@ -1,0 +1,72 @@
+extends Node
+## Phase calendar. Always reads/writes GameState.data — never a cached alias.
+
+const Enums := preload("res://src/core/enums.gd")
+const CareSystemScript := preload("res://src/care/care_system.gd")
+
+
+func _gs() -> Node:
+	return Engine.get_main_loop().root.get_node("GameState")
+
+
+func _bus() -> Node:
+	return Engine.get_main_loop().root.get_node("EventBus")
+
+
+func advance_phase() -> void:
+	var clock = _gs().data.clock
+	_bus().phase_ended.emit(clock.phase)
+	CareSystemScript.apply_phase_decay(_gs().data, clock.phase)
+	if clock.phase == Enums.Phase.EVENING:
+		_run_night_bundle()
+		var season_changed: bool = clock.advance_to_next_morning()
+		if season_changed:
+			for h in _gs().data.horses:
+				if h is Dictionary and h.has("age_months"):
+					h["age_months"] = int(h["age_months"]) + 3
+				elif h != null and "age_months" in h:
+					h.age_months += 3
+			_bus().season_started.emit(clock.season)
+		_bus().day_started.emit(clock)
+		_bus().phase_started.emit(Enums.Phase.MORNING)
+	else:
+		clock.phase = (int(clock.phase) + 1) as Enums.Phase
+		_bus().phase_started.emit(clock.phase)
+	var rng = _gs().sim_rng
+	if rng:
+		_gs().data.rng_call_count = rng.call_count
+	_bus().clock_changed.emit()
+
+
+func sleep_until_morning() -> void:
+	## Advance to the *next* morning. A no-op-if-already-Morning loop
+	## would leave pause-menu Sleep and the 112-day wrap test stuck on day 0.
+	if _gs().data.clock.phase == Enums.Phase.MORNING:
+		advance_phase()
+	while _gs().data.clock.phase != Enums.Phase.MORNING:
+		advance_phase()
+
+
+func _run_night_bundle() -> void:
+	## TrainingSystem.rest / InjurySystem.tick arrive in PR 6.
+	for h in _gs().data.horses:
+		if h is Dictionary:
+			h["phase_busy"] = false
+			h["schooled_today"] = false
+			h["fed_morning"] = false
+			h["fed_evening"] = false
+			h["picked_stall_today"] = false
+			h["turned_out"] = false
+		elif h != null:
+			if "phase_busy" in h:
+				h.phase_busy = false
+			if "schooled_today" in h:
+				h.schooled_today = false
+			if "fed_morning" in h:
+				h.fed_morning = false
+			if "fed_evening" in h:
+				h.fed_evening = false
+			if "picked_stall_today" in h:
+				h.picked_stall_today = false
+			if "turned_out" in h:
+				h.turned_out = false

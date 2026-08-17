@@ -1,0 +1,50 @@
+extends CanvasLayer
+
+@onready var _panel: Control = $Panel
+
+
+func _ready() -> void:
+	visible = false
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		toggle()
+		get_viewport().set_input_as_handled()
+
+
+func toggle() -> void:
+	if visible:
+		close()
+	else:
+		open()
+
+
+func open() -> void:
+	visible = true
+	get_tree().paused = true
+
+
+func close() -> void:
+	visible = false
+	get_tree().paused = false
+
+
+func _on_resume() -> void:
+	close()
+
+
+func _on_sleep() -> void:
+	get_node("/root/GameClock").sleep_until_morning()
+	get_node("/root/SaveService").autosave()
+
+
+func _on_save() -> void:
+	get_node("/root/SaveService").save_slot(1)
+	get_node("/root/EventBus").toast.emit("Saved.")
+
+
+func _on_quit() -> void:
+	get_tree().paused = false
+	get_tree().quit()

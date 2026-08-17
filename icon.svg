@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="16" fill="#2a3d32"/>
+  <rect x="18" y="78" width="10" height="28" rx="2" fill="#d8c39a"/>
+  <rect x="100" y="78" width="10" height="28" rx="2" fill="#d8c39a"/>
+  <rect x="22" y="70" width="84" height="8" rx="2" fill="#c4a574"/>
+  <rect x="22" y="56" width="84" height="8" rx="2" fill="#c4a574"/>
+  <circle cx="40" cy="42" r="5" fill="#e8d5a3"/>
+  <text x="64" y="118" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="#e8d5a3">LIVIA</text>
+</svg>
