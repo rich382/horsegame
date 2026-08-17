@@ -28,6 +28,7 @@ func advance_phase() -> void:
 				elif h != null and "age_months" in h:
 					h.age_months += 3
 			_bus().season_started.emit(clock.season)
+		_collect_board()
 		_bus().day_started.emit(clock)
 		_bus().phase_started.emit(Enums.Phase.MORNING)
 	else:
@@ -46,6 +47,14 @@ func sleep_until_morning() -> void:
 		advance_phase()
 	while _gs().data.clock.phase != Enums.Phase.MORNING:
 		advance_phase()
+
+
+func _collect_board() -> void:
+	var econ = Engine.get_main_loop().root.get_node_or_null("Economy")
+	if econ and econ.has_method("collect_board"):
+		var msg: String = String(econ.collect_board())
+		if msg.begins_with("Board checks"):
+			_bus().toast.emit(msg)
 
 
 func _run_night_bundle() -> void:

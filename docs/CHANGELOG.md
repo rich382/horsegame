@@ -2,6 +2,14 @@
 
 All notable project changes. Session detail lives in [`docs/log/`](log/).
 
+## 2026-08-17
+
+### Added
+
+- Barn office: take boarders ($160/week), haul-for-hire (needs truck + trailer), enter Ashford Saturday 0.80 m.
+- Shop catalog: more tack, drag, extra jumps, barn wing (8 stalls), indoor, used diesel, two-horse trailer.
+- Farm grows when you buy: second barn, truck/trailer blocks, extra fences, arena roof.
+
 ## 2026-08-16
 
 ### Fixed

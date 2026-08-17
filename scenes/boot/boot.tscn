@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scenes/boot/boot.gd" id="1_boot"]
 [ext_resource type="Script" path="res://scenes/boot/orbit_camera.gd" id="2_cam"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/shop.tscn" id="9_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/school.tscn" id="10_school"]
 [ext_resource type="PackedScene" path="res://scenes/ui/recap.tscn" id="11_recap"]
+[ext_resource type="PackedScene" path="res://scenes/ui/office.tscn" id="12_office"]
 
 [sub_resource type="Environment" id="Environment_boot"]
 background_mode = 1
@@ -150,6 +151,10 @@ text = "School"
 custom_minimum_size = Vector2(100, 40)
 text = "Shop"
 
+[node name="Office" type="Button" parent="HUD/Care"]
+custom_minimum_size = Vector2(100, 40)
+text = "Office"
+
 [node name="SchoolWork" type="HBoxContainer" parent="HUD"]
 visible = false
 offset_left = 24.0
@@ -210,6 +215,8 @@ text = "Pause (P)"
 
 [node name="School" parent="." instance=ExtResource("10_school")]
 
+[node name="Office" parent="." instance=ExtResource("12_office")]
+
 [node name="Recap" parent="." instance=ExtResource("11_recap")]
 
 [connection signal="pressed" from="HUD/Care/Feed" to="." method="_on_feed"]
@@ -218,6 +225,7 @@ text = "Pause (P)"
 [connection signal="pressed" from="HUD/Care/Groom" to="." method="_on_groom"]
 [connection signal="pressed" from="HUD/Care/School" to="." method="_on_school"]
 [connection signal="pressed" from="HUD/Care/Shop" to="." method="_on_shop"]
+[connection signal="pressed" from="HUD/Care/Office" to="." method="_on_office"]
 [connection signal="pressed" from="HUD/SchoolWork/Flat" to="." method="_on_flat_school"]
 [connection signal="pressed" from="HUD/SchoolWork/Poles" to="." method="_on_poles_school"]
 [connection signal="pressed" from="HUD/SchoolWork/Gymnastic" to="." method="_on_gym_school"]

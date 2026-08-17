@@ -1,17 +1,40 @@
 extends CanvasLayer
-## Feed, farrier, tack, and the arena footing upgrade. Economy.post is the till.
+## Feed, tack, equipment, barn, truck, trailer. Economy.post is the till.
 
-@onready var _stock: Label = $Panel/Stock
+const Catalog := preload("res://src/barn/shop_catalog.gd")
+
+@onready var _stock: Label = $Center/Card/Margin/VBox/Stock
+@onready var _list: VBoxContainer = $Center/Card/Margin/VBox/Scroll/List
 
 
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_build_list()
 
 
 func open() -> void:
 	visible = true
 	_refresh()
+
+
+func _build_list() -> void:
+	for c in _list.get_children():
+		c.queue_free()
+	for section in Catalog.SECTIONS:
+		var head := Label.new()
+		head.text = String(section["title"])
+		head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		head.add_theme_font_size_override("font_size", 18)
+		head.add_theme_color_override("font_color", Color(0.95, 0.90, 0.76))
+		_list.add_child(head)
+		for item in section["items"]:
+			var b := Button.new()
+			b.custom_minimum_size = Vector2(0, 40)
+			b.text = String(item["label"])
+			var item_id := String(item["id"])
+			b.pressed.connect(func() -> void: _on_buy(item_id))
+			_list.add_child(b)
 
 
 func _refresh() -> void:
@@ -20,45 +43,27 @@ func _refresh() -> void:
 		_stock.text = ""
 		return
 	var farm: Dictionary = gs.data.farm
-	_stock.text = "Cash $%d\nHay %d days   ·   Grain %d days\nArena footing %d" % [
+	var rig := "none"
+	if bool(farm.get("has_truck", false)) and bool(farm.get("has_trailer", false)):
+		rig = "truck + two-horse"
+	elif bool(farm.get("has_truck", false)):
+		rig = "truck only"
+	elif bool(farm.get("has_trailer", false)):
+		rig = "trailer only"
+	_stock.text = "Cash $%d   ·   Hay %dd   ·   Grain %dd\nBarn %d-stall   ·   Boarders %d   ·   Rig: %s" % [
 		int(gs.data.player.cash),
 		int(farm.get("hay_days", 0)),
 		int(farm.get("grain_days", 0)),
-		int(farm.get("footing_quality", 40)),
+		farm.get("stalls", []).size(),
+		farm.get("boarders", []).size(),
+		rig,
 	]
 
 
-func _buy(msg: String) -> void:
+func _on_buy(id: String) -> void:
+	var msg: String = get_node("/root/Economy").buy(id)
 	get_node("/root/EventBus").toast.emit(msg)
 	_refresh()
-
-
-func _on_hay() -> void:
-	_buy(get_node("/root/Economy").buy_hay())
-
-
-func _on_grain() -> void:
-	_buy(get_node("/root/Economy").buy_grain())
-
-
-func _on_farrier() -> void:
-	var gs := get_node("/root/GameState")
-	var horse = null
-	if gs.data and not gs.data.horses.is_empty():
-		horse = gs.data.horses[0]
-	_buy(get_node("/root/Economy").buy_farrier(horse))
-
-
-func _on_boots() -> void:
-	_buy(get_node("/root/Economy").buy_boots())
-
-
-func _on_martingale() -> void:
-	_buy(get_node("/root/Economy").buy_martingale())
-
-
-func _on_footing() -> void:
-	_buy(get_node("/root/Economy").buy_footing())
 
 
 func _on_close() -> void:

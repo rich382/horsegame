@@ -1307,6 +1307,17 @@ func tick(data: GameStateData) -> void:
 | Running martingale | $95 |
 | Arena footing upgrade (shop, patches arena `footing_quality` 40 → 65; home `p_rail` only) | $1,200 |
 | Extra stall (PR 10, not slice) | $2,500 |
+| Used diesel truck | $8,500 |
+| Two-horse trailer | $4,200 |
+| Four-stall barn wing (4 → 8 stalls) | $12,000 |
+| Covered arena | $15,000 |
+| Arena drag | $620 |
+| Extra jump set | $380 |
+| Standing martingale / bell boots / cooler | $70 / $55 / $90 |
+| Vet exam | $200 |
+| Weekly board (income, per boarder) | **+$160** |
+| Haul-for-hire (income, needs rig, 1/day) | **+$80–$160** |
+| Ashford haul (own rig / shipper) | $40 / $120 |
 
 Slice copy: ribbon pays **$15–$180**, not “$75–$200”. 6th is a small check, not $0.
 

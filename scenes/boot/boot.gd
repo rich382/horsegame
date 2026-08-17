@@ -25,6 +25,7 @@ const Enums := preload("res://src/core/enums.gd")
 @onready var _cam: Camera3D = $Camera3D
 @onready var _player: Node3D = $PlayerAvatar
 @onready var _shop: CanvasLayer = $Shop
+@onready var _office: CanvasLayer = $Office
 @onready var _school: CanvasLayer = $School
 @onready var _school_work: HBoxContainer = $HUD/SchoolWork
 @onready var _recap: CanvasLayer = $Recap
@@ -35,7 +36,11 @@ var _pending_recap = null
 
 func _ready() -> void:
 	if _yard.has_method("build"):
-		_yard.build()
+		var farm: Dictionary = {}
+		var gs0 := get_node_or_null("/root/GameState")
+		if gs0 and gs0.data:
+			farm = gs0.data.farm
+		_yard.build(farm)
 	_spawn_horse()
 	var bus := get_node("/root/EventBus")
 	if not bus.toast.is_connected(_on_toast):
@@ -45,6 +50,8 @@ func _ready() -> void:
 	_new_game.confirmed.connect(_on_identity)
 	_new_game.coat_previewed.connect(_on_coat_preview)
 	_school.picked.connect(_on_school_picked)
+	if _office and _office.has_signal("ashford_done"):
+		_office.ashford_done.connect(_on_ashford_done)
 	if _school.has_signal("closed"):
 		_school.closed.connect(_hide_school_choices)
 	if _school_work:
@@ -110,14 +117,17 @@ func _refresh_clock() -> void:
 	if gs.data.horses.size() > 0:
 		horse_name = String(gs.data.horses[0].name)
 	var farm: Dictionary = gs.data.farm
-	_status_label.text = "%s   ·   $%d   ·   Hay %dd   ·   Grain %dd" % [
+	_status_label.text = "%s   ·   $%d   ·   Hay %dd   ·   Grain %dd   ·   Board %d" % [
 		horse_name,
 		int(gs.data.player.cash),
 		int(farm.get("hay_days", 0)),
 		int(farm.get("grain_days", 0)),
+		farm.get("boarders", []).size(),
 	]
 	_refresh_sheet()
 	_place_horse()
+	if _yard.has_method("build"):
+		_yard.build(farm)
 
 
 func _spawn_horse() -> void:
@@ -210,6 +220,18 @@ func _on_shop() -> void:
 	_walk_then(SHOP_POS, func() -> void:
 		_shop.open()
 	)
+
+
+func _on_office() -> void:
+	_walk_then(SHOP_POS, func() -> void:
+		_office.open()
+	)
+
+
+func _on_ashford_done(payload: Dictionary) -> void:
+	if _recap and _recap.has_method("open_result"):
+		_recap.open_result(payload.get("result", null), "Ashford 0.80 m jumper")
+	_refresh_clock()
 
 
 func _on_school() -> void:

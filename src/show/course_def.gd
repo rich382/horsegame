@@ -21,6 +21,23 @@ func time_allowed() -> float:
 	return length_m / (float(speed_mpm) / 60.0)
 
 
+static func ashford_080():
+	var c = new()
+	c.id = &"jp_080"
+	c.length_m = 320.0
+	c.speed_mpm = 350
+	c.time_allowed_sec = 55.0
+	c.fences = [
+		FenceDefScript.make("a1", 0.80, 0.0, 0.10, 0.0),
+		FenceDefScript.make("a2", 0.80, 0.0, 0.12, 0.0),
+		FenceDefScript.make("a3", 0.80, 0.55, 0.18, 0.0),
+		FenceDefScript.make("a4", 0.80, 0.0, 0.10, 21.95),
+		FenceDefScript.make("a5", 0.80, 0.0, 0.22, 0.0),
+		FenceDefScript.make("a6", 0.80, 0.40, 0.16, 0.0),
+	]
+	return c
+
+
 static func home_gym_080():
 	var c = new()
 	c.id = &"home_gym_080"

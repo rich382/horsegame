@@ -1,11 +1,11 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scenes/ui/shop.gd" id="1_shop"]
+[ext_resource type="Script" path="res://scenes/ui/office.gd" id="1_off"]
 
-[node name="Shop" type="CanvasLayer"]
+[node name="Office" type="CanvasLayer"]
 layer = 25
 visible = false
-script = ExtResource("1_shop")
+script = ExtResource("1_off")
 
 [node name="Dim" type="ColorRect" parent="."]
 anchors_preset = 15
@@ -19,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Card" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(520, 640)
+custom_minimum_size = Vector2(540, 640)
 
 [node name="Back" type="ColorRect" parent="Center/Card"]
 layout_mode = 2
@@ -41,25 +41,18 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.90, 0.76, 1)
 theme_override_font_sizes/font_size = 28
-text = "Barn shop"
+text = "Barn office"
 horizontal_alignment = 1
 
-[node name="Stock" type="Label" parent="Center/Card/Margin/VBox"]
+[node name="Body" type="Label" parent="Center/Card/Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.90, 0.88, 0.80, 1)
 theme_override_font_sizes/font_size = 15
-text = "Cash $10000"
-horizontal_alignment = 1
+text = ""
 autowrap_mode = 3
 
-[node name="Scroll" type="ScrollContainer" parent="Center/Card/Margin/VBox"]
-custom_minimum_size = Vector2(0, 420)
+[node name="Jobs" type="VBoxContainer" parent="Center/Card/Margin/VBox"]
 layout_mode = 2
-size_flags_vertical = 3
-
-[node name="List" type="VBoxContainer" parent="Center/Card/Margin/VBox/Scroll"]
-layout_mode = 2
-size_flags_horizontal = 3
 theme_override_constants/separation = 6
 
 [node name="Close" type="Button" parent="Center/Card/Margin/VBox"]

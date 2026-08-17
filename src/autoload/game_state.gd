@@ -75,4 +75,22 @@ func _fill_farm(farm: Dictionary) -> Dictionary:
 		farm["tack_owned"] = []
 	if not farm.has("stalls"):
 		farm["stalls"] = []
+	if not farm.has("barn_tier"):
+		farm["barn_tier"] = 1
+	if not farm.has("has_truck"):
+		farm["has_truck"] = false
+	if not farm.has("has_trailer"):
+		farm["has_trailer"] = false
+	if not farm.has("trailer_capacity"):
+		farm["trailer_capacity"] = 0
+	if not farm.has("has_drag"):
+		farm["has_drag"] = false
+	if not farm.has("has_indoor"):
+		farm["has_indoor"] = false
+	if not farm.has("jump_sets"):
+		farm["jump_sets"] = 1
+	if not farm.has("boarders"):
+		farm["boarders"] = []
+	if not farm.has("last_haul_abs_day"):
+		farm["last_haul_abs_day"] = -99
 	return farm

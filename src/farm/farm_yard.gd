@@ -13,23 +13,48 @@ const TREE_DEFAULT := "res://assets/models/nature/tree_default.glb"
 const BUSH := "res://assets/models/nature/plant_bushLarge.glb"
 
 
-func build() -> void:
+var _sig := ""
+
+
+func build(farm: Dictionary = {}) -> void:
+	var sig := "%s-%s-%s-%s-%s" % [
+		str(farm.get("barn_tier", 1)),
+		str(farm.get("has_truck", false)),
+		str(farm.get("has_trailer", false)),
+		str(farm.get("has_indoor", false)),
+		str(farm.get("jump_sets", 1)),
+	]
+	if sig == _sig and get_child_count() > 0:
+		return
+	_sig = sig
 	for c in get_children():
 		c.queue_free()
 	_add_ground()
-	_add_arena()
+	_add_arena(bool(farm.get("has_indoor", false)))
 	## Aisle faces the yard (+Z). Exporter maps Blender +Y → Godot −Z, so yaw 180°.
 	_add_model(BARN, Vector3(-8.5, 0, -6.2), PI)
+	if int(farm.get("barn_tier", 1)) >= 2:
+		_add_model(BARN, Vector3(-14.8, 0, -6.2), PI, 1.0)
 	_add_model(JUMP, Vector3(6.2, 0, -2.2), 0.15)
 	_add_model(JUMP, Vector3(7.6, 0, 6.4), -0.35, 0.95)
+	if int(farm.get("jump_sets", 1)) >= 2:
+		_add_model(JUMP, Vector3(4.4, 0, 2.0), 1.2, 0.9)
+		_add_model(JUMP, Vector3(9.4, 0, 2.2), -1.4, 0.9)
 	for i in 5:
 		_add_model(FENCE, Vector3(-14.0 + float(i) * 3.0, 0, 7.0), 0.0)
+	if int(farm.get("barn_tier", 1)) >= 2:
+		for i in 3:
+			_add_model(FENCE, Vector3(-18.0, 0, -4.0 + float(i) * 3.0), PI * 0.5)
 	_add_model(TREE_OAK, Vector3(-17.0, 0, -10.0), 0.4, 1.1)
 	_add_model(TREE_TALL, Vector3(18.0, 0, -8.0), -0.2, 1.0)
 	_add_model(TREE_DEFAULT, Vector3(-16.5, 0, 11.0), 1.1, 1.05)
 	_add_model(TREE_OAK, Vector3(16.0, 0, 12.5), 0.7, 0.9)
 	_add_model(BUSH, Vector3(-12.0, 0, 8.5), 0.2, 1.1)
 	_add_model(BUSH, Vector3(13.5, 0, -11.0), 0.8, 1.0)
+	if bool(farm.get("has_truck", false)):
+		_add_rig_box(Vector3(14.2, 0.7, -5.4), Vector3(4.4, 1.4, 1.8), Color(0.18, 0.20, 0.22))
+	if bool(farm.get("has_trailer", false)):
+		_add_rig_box(Vector3(14.2, 0.85, -2.2), Vector3(3.6, 1.7, 1.6), Color(0.55, 0.55, 0.52))
 
 
 func _mat(tex: Texture2D, uv: Vector3) -> StandardMaterial3D:
@@ -58,13 +83,37 @@ func _add_ground() -> void:
 	add_child(body)
 
 
-func _add_arena() -> void:
+func _add_arena(indoor: bool) -> void:
 	var mesh := PlaneMesh.new()
 	mesh.size = Vector2(14, 20)
 	var inst := MeshInstance3D.new()
 	inst.mesh = mesh
 	inst.position = Vector3(6.5, 0.03, 2.0)
 	inst.material_override = _mat(TEX_FOOTING, Vector3(4, 6, 1))
+	add_child(inst)
+	if indoor:
+		var roof := BoxMesh.new()
+		roof.size = Vector3(16, 0.12, 22)
+		var cover := MeshInstance3D.new()
+		cover.mesh = roof
+		cover.position = Vector3(6.5, 4.2, 2.0)
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.35, 0.32, 0.28)
+		mat.roughness = 0.9
+		cover.material_override = mat
+		add_child(cover)
+
+
+func _add_rig_box(origin: Vector3, size: Vector3, color: Color) -> void:
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	var inst := MeshInstance3D.new()
+	inst.mesh = mesh
+	inst.position = origin
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.roughness = 0.85
+	inst.material_override = mat
 	add_child(inst)
 
 

@@ -38,6 +38,8 @@ Press **Play (F5)** in Godot. Name the horse, pick a coat, then orbit the **3D**
 - **Left-drag** to orbit, **mouse wheel** to zoom
 - **Feed / Pick / In-Out / Groom** — walk over and do the chore
 - **School** — lead the horse to the arena; afternoon flat, poles, or gymnastic (gymnastic shows a recap)
+- **Shop** — feed, tack, jumps, footing, barn wing, indoor, truck, trailer
+- **Office** — boarders, haul-for-hire, Ashford Saturday 0.80 m jumper
 - **Shop** — walk to the aisle; hay, grain, farrier, boots, martingale, footing
 - **Next Phase** / **N** advances Morning → Afternoon → Evening
 - **Sleep** / **M** skips to the next morning
