@@ -1,5 +1,5 @@
 extends Node3D
-## Textured free horse (static mesh) with Quaternius FBX as animated fallback.
+## Textured free horse (skinned idle/walk/jump) with Quaternius FBX as fallback.
 
 const Enums := preload("res://src/core/enums.gd")
 const HORSE_GLB := "res://assets/models/horse/free_horse.glb"

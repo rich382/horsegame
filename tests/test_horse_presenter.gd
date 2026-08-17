@@ -32,6 +32,19 @@ static func run() -> int:
 		elif not bool(n.is_busy()):
 			push_error("horse presenter: walk_to should be busy")
 			fails += 1
+	var glb = load("res://assets/models/horse/free_horse.glb")
+	if glb:
+		var inst: Node = glb.instantiate()
+		var ap := _find_anim(inst)
+		if ap == null:
+			push_error("horse presenter: free_horse.glb has no AnimationPlayer")
+			fails += 1
+		else:
+			var names := ",".join(ap.get_animation_list()).to_lower()
+			if "walk" not in names or "idle" not in names or "jump" not in names:
+				push_error("horse presenter: free_horse missing walk/idle/jump (%s)" % names)
+				fails += 1
+		inst.free()
 	var fbx = load("res://assets/models/horse/Horse.fbx")
 	if fbx:
 		var inst: Node = fbx.instantiate()
