@@ -4,6 +4,10 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 ## 2026-08-17
 
+### Changed
+
+- Farm lot is 160 m on a side. Gravel drive and truck/trailer sit on a west entrance (~x = −42), linked by a lane along the barn — well clear of the east arena.
+
 ### Added
 
 - Own a string: buy a green prospect ($3,200), sell a made horse, switch with < >.

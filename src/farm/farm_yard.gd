@@ -1,6 +1,7 @@
 class_name FarmYard
 extends Node3D
-## 3D Blender barn / jump / fence + Kenney trees on textured ground.
+## 3D Blender barn / jump / fence + Kenney trees on a wide lot.
+## Arena sits east of the barn. Drive and rig sit on a west entrance.
 
 const TEX_GRASS := preload("res://assets/textures/tex_grass.jpg")
 const TEX_FOOTING := preload("res://assets/textures/tex_footing.jpg")
@@ -11,6 +12,15 @@ const TREE_OAK := "res://assets/models/nature/tree_oak.glb"
 const TREE_TALL := "res://assets/models/nature/tree_tall.glb"
 const TREE_DEFAULT := "res://assets/models/nature/tree_default.glb"
 const BUSH := "res://assets/models/nature/plant_bushLarge.glb"
+
+const LOT := 160.0
+const ARENA_AT := Vector3(6.5, 0.03, 2.0)
+const BARN_AT := Vector3(-8.5, 0, -6.2)
+const WING_AT := Vector3(-14.8, 0, -6.2)
+const DRIVE_AT := Vector3(-42.0, 0.05, 2.0)
+const LANE_AT := Vector3(-27.0, 0.05, -5.6)
+const TRUCK_AT := Vector3(-42.0, 0.0, -1.2)
+const TRAILER_AT := Vector3(-42.0, 0.0, 5.2)
 
 
 var _sig := ""
@@ -37,31 +47,30 @@ func build(farm: Dictionary = {}) -> void:
 	_add_ground()
 	_add_arena(bool(farm.get("has_indoor", false)))
 	## Aisle faces the yard (+Z). Exporter maps Blender +Y → Godot −Z, so yaw 180°.
-	_add_model(BARN, Vector3(-8.5, 0, -6.2), PI)
+	_add_model(BARN, BARN_AT, PI)
 	if int(farm.get("barn_tier", 1)) >= 2:
-		_add_model(BARN, Vector3(-14.8, 0, -6.2), PI, 1.0)
+		_add_model(BARN, WING_AT, PI, 1.0)
 	_add_model(JUMP, Vector3(6.2, 0, -2.2), 0.15)
 	_add_model(JUMP, Vector3(7.6, 0, 6.4), -0.35, 0.95)
 	if int(farm.get("jump_sets", 1)) >= 2:
 		_add_model(JUMP, Vector3(4.4, 0, 2.0), 1.2, 0.9)
 		_add_model(JUMP, Vector3(9.4, 0, 2.2), -1.4, 0.9)
+	## South paddock rail, kept east of the west drive.
+	for i in 8:
+		_add_model(FENCE, Vector3(-18.0 + float(i) * 3.0, 0, 12.0), 0.0)
+	## West paddock rail so turnout stays off the gravel lane.
 	for i in 5:
-		_add_model(FENCE, Vector3(-14.0 + float(i) * 3.0, 0, 7.0), 0.0)
+		_add_model(FENCE, Vector3(-20.0, 0, -2.0 + float(i) * 3.0), PI * 0.5)
 	if int(farm.get("barn_tier", 1)) >= 2:
-		for i in 3:
-			_add_model(FENCE, Vector3(-18.0, 0, -4.0 + float(i) * 3.0), PI * 0.5)
-	_add_model(TREE_OAK, Vector3(-17.0, 0, -10.0), 0.4, 1.1)
-	_add_model(TREE_TALL, Vector3(18.0, 0, -8.0), -0.2, 1.0)
-	_add_model(TREE_DEFAULT, Vector3(-16.5, 0, 11.0), 1.1, 1.05)
-	_add_model(TREE_OAK, Vector3(16.0, 0, 12.5), 0.7, 0.9)
-	_add_model(BUSH, Vector3(-12.0, 0, 8.5), 0.2, 1.1)
-	_add_model(BUSH, Vector3(13.5, 0, -11.0), 0.8, 1.0)
+		for i in 4:
+			_add_model(FENCE, Vector3(-22.0, 0, -10.0 + float(i) * 3.0), PI * 0.5)
+	_add_trees()
 	if bool(farm.get("has_truck", false)) or bool(farm.get("has_trailer", false)):
 		_add_drive()
 	if bool(farm.get("has_truck", false)):
-		_add_truck(Vector3(-1.2, 0.0, 4.2))
+		_add_truck(TRUCK_AT)
 	if bool(farm.get("has_trailer", false)):
-		_add_trailer(Vector3(-1.2, 0.0, 8.2))
+		_add_trailer(TRAILER_AT)
 
 
 func _mat(tex: Texture2D, uv: Vector3) -> StandardMaterial3D:
@@ -74,16 +83,16 @@ func _mat(tex: Texture2D, uv: Vector3) -> StandardMaterial3D:
 
 func _add_ground() -> void:
 	var mesh := PlaneMesh.new()
-	mesh.size = Vector2(48, 48)
+	mesh.size = Vector2(LOT, LOT)
 	var inst := MeshInstance3D.new()
 	inst.mesh = mesh
-	inst.material_override = _mat(TEX_GRASS, Vector3(12, 12, 1))
+	inst.material_override = _mat(TEX_GRASS, Vector3(40, 40, 1))
 	add_child(inst)
 	var body := StaticBody3D.new()
 	body.name = "GroundPick"
 	var col := CollisionShape3D.new()
 	var box := BoxShape3D.new()
-	box.size = Vector3(48, 0.2, 48)
+	box.size = Vector3(LOT, 0.2, LOT)
 	col.shape = box
 	col.position.y = -0.1
 	body.add_child(col)
@@ -95,7 +104,7 @@ func _add_arena(indoor: bool) -> void:
 	mesh.size = Vector2(14, 20)
 	var inst := MeshInstance3D.new()
 	inst.mesh = mesh
-	inst.position = Vector3(6.5, 0.03, 2.0)
+	inst.position = ARENA_AT
 	inst.material_override = _mat(TEX_FOOTING, Vector3(4, 6, 1))
 	add_child(inst)
 	if indoor:
@@ -103,7 +112,7 @@ func _add_arena(indoor: bool) -> void:
 		roof.size = Vector3(16, 0.12, 22)
 		var cover := MeshInstance3D.new()
 		cover.mesh = roof
-		cover.position = Vector3(6.5, 4.2, 2.0)
+		cover.position = Vector3(ARENA_AT.x, 4.2, ARENA_AT.z)
 		var mat := StandardMaterial3D.new()
 		mat.albedo_color = Color(0.35, 0.32, 0.28)
 		mat.roughness = 0.9
@@ -112,17 +121,46 @@ func _add_arena(indoor: bool) -> void:
 
 
 func _add_drive() -> void:
+	## Parking apron west of the barn. Arena left edge is x ≈ -0.5; this pad
+	## ends near x = -35 so the rig never sits on the ring.
+	_gravel("Drive", DRIVE_AT, Vector2(14.0, 26.0))
+	_gravel("DriveLane", LANE_AT, Vector2(26.0, 5.0))
+
+
+func _gravel(node_name: String, at: Vector3, size: Vector2) -> void:
 	var mesh := PlaneMesh.new()
-	mesh.size = Vector2(8.0, 14.0)
+	mesh.size = size
 	var inst := MeshInstance3D.new()
-	inst.name = "Drive"
+	inst.name = node_name
 	inst.mesh = mesh
-	inst.position = Vector3(-1.2, 0.05, 6.2)
+	inst.position = at
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(0.62, 0.56, 0.42)
 	mat.roughness = 0.95
 	inst.material_override = mat
 	add_child(inst)
+
+
+func _add_trees() -> void:
+	var spots: Array = [
+		[TREE_OAK, Vector3(-62.0, 0, -28.0), 0.4, 1.25],
+		[TREE_TALL, Vector3(58.0, 0, -32.0), -0.2, 1.2],
+		[TREE_DEFAULT, Vector3(-56.0, 0, 36.0), 1.1, 1.15],
+		[TREE_OAK, Vector3(54.0, 0, 42.0), 0.7, 1.1],
+		[TREE_TALL, Vector3(-68.0, 0, 8.0), 0.3, 1.05],
+		[TREE_DEFAULT, Vector3(66.0, 0, 10.0), -0.8, 1.1],
+		[TREE_OAK, Vector3(8.0, 0, -58.0), 1.4, 1.0],
+		[TREE_TALL, Vector3(-12.0, 0, 58.0), 0.15, 1.1],
+		[TREE_DEFAULT, Vector3(-48.0, 0, -48.0), 0.9, 1.05],
+		[TREE_OAK, Vector3(48.0, 0, -50.0), -0.5, 1.15],
+		[TREE_TALL, Vector3(-50.0, 0, 22.0), 0.6, 1.0],
+		[BUSH, Vector3(-12.0, 0, 13.5), 0.2, 1.1],
+		[BUSH, Vector3(22.0, 0, -22.0), 0.8, 1.0],
+		[BUSH, Vector3(-24.0, 0, -14.0), 0.5, 1.15],
+		[BUSH, Vector3(-36.0, 0, 14.0), 1.2, 1.05],
+	]
+	for s in spots:
+		_add_model(s[0], s[1], s[2], s[3])
 
 
 func _box(name: String, at: Vector3, size: Vector3, color: Color) -> MeshInstance3D:

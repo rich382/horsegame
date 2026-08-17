@@ -46,6 +46,14 @@ static func run() -> int:
 		if yard.get_node_or_null("TrailerBox") == null:
 			push_error("barn: trailer mesh missing after build")
 			fails += 1
+		var drive: Node3D = yard.get_node_or_null("Drive")
+		var lane: Node3D = yard.get_node_or_null("DriveLane")
+		if drive == null or lane == null:
+			push_error("barn: drive pad or lane missing")
+			fails += 1
+		elif drive.position.x > -32.0:
+			push_error("barn: drive overlaps arena zone x=%s" % drive.position.x)
+			fails += 1
 		yard.queue_free()
 	var haul1: String = econ.do_haul("vet_run")
 	if not haul1.contains("Hauled"):

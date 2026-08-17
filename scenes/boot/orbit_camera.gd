@@ -5,7 +5,7 @@ signal yard_clicked(screen_pos: Vector2)
 
 var _yaw := 0.55
 var _pitch := -0.48
-var _dist := 20.0
+var _dist := 38.0
 var _dragging := false
 var _press_pos := Vector2.ZERO
 var _moved := false
@@ -35,7 +35,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_apply()
 			get_viewport().set_input_as_handled()
 		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN and mb.pressed:
-			_dist = minf(42.0, _dist + 1.6)
+			_dist = minf(110.0, _dist + 2.2)
 			_apply()
 			get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion and _dragging:

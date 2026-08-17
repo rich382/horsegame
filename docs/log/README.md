@@ -6,7 +6,7 @@ All design notes, session write-ups, review findings, and implementation records
 |---|---|
 | [`docs/DESIGN.md`](../DESIGN.md) | Approved design document |
 | [`docs/CHANGELOG.md`](../CHANGELOG.md) | User-facing changes |
-| [`docs/log/`](.) | Dated session logs (latest: breeding, theater, hunter) |
+| [`docs/log/`](.) | Dated session logs (latest: farm lot / west drive) |
 
 ## How to log
 
