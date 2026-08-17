@@ -14,6 +14,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 - Shop: hay, grain, farrier, open-front boots, running martingale, arena footing. Cash only moves through `Economy.post`.
 - Afternoon school: lead the horse to the arena, then flat / poles / gymnastic (one trip a day). The horse walks the trip; gymnastic uses the two fences.
+- Jumper resolver (oracles A–D). Home gymnastic rolls a 4-fence trip and shows a recap (rails / refusals / faults). Footing 40 vs 65 changes home `p_rail`.
 - Approved design for **Livia's Stable** (`docs/DESIGN.md`): Hunter/Jumper farm + show career, Godot 4.7, management sim + course theater.
 - Godot project bootstrap (PR 1): `project.godot`, boot scene, enums, game config, folder tree.
 - Clock, EventBus, GameState, JSON save/migrate, pause Sleep (PR 2).

@@ -50,6 +50,9 @@ static func run() -> int:
 		if boot.get_node_or_null("Shop") == null or boot.get_node_or_null("School") == null:
 			push_error("boot actions: Shop/School panels missing")
 			fails += 1
+		if boot.get_node_or_null("Recap") == null:
+			push_error("boot actions: Recap panel missing")
+			fails += 1
 		var school: Node = boot.get_node_or_null("School")
 		if school and school.has_method("open"):
 			school.open()

@@ -1,0 +1,11 @@
+{
+  "id": "bayberry_f1_stay",
+  "example": "A",
+  "spot_noise": 0.0,
+  "footing_quality": 50,
+  "spot": -0.2089,
+  "p_disob": 0.02664,
+  "p_refuse": 0.02038,
+  "p_runout": 0.00626,
+  "p_rail": 0.03320
+}

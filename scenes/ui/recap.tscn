@@ -1,0 +1,59 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/recap.gd" id="1_recap"]
+
+[node name="Recap" type="CanvasLayer"]
+layer = 26
+visible = false
+script = ExtResource("1_recap")
+
+[node name="Dim" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.07, 0.06, 0.62)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Card" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(460, 420)
+
+[node name="Back" type="ColorRect" parent="Center/Card"]
+layout_mode = 2
+color = Color(0.14, 0.17, 0.15, 0.96)
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="Center/Card"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="Center/Card/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Center/Card/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.90, 0.76, 1)
+theme_override_font_sizes/font_size = 28
+text = "Recap"
+horizontal_alignment = 1
+
+[node name="Body" type="Label" parent="Center/Card/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.93, 0.90, 0.80, 1)
+theme_override_font_sizes/font_size = 18
+text = ""
+autowrap_mode = 3
+
+[node name="Close" type="Button" parent="Center/Card/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Back to the farm"
+
+[connection signal="pressed" from="Center/Card/Margin/VBox/Close" to="." method="_on_close"]

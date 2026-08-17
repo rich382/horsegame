@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scenes/boot/boot.gd" id="1_boot"]
 [ext_resource type="Script" path="res://scenes/boot/orbit_camera.gd" id="2_cam"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player_avatar.tscn" id="8_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/shop.tscn" id="9_shop"]
 [ext_resource type="PackedScene" path="res://scenes/ui/school.tscn" id="10_school"]
+[ext_resource type="PackedScene" path="res://scenes/ui/recap.tscn" id="11_recap"]
 
 [sub_resource type="Environment" id="Environment_boot"]
 background_mode = 1
@@ -208,6 +209,8 @@ text = "Pause (P)"
 [node name="Shop" parent="." instance=ExtResource("9_shop")]
 
 [node name="School" parent="." instance=ExtResource("10_school")]
+
+[node name="Recap" parent="." instance=ExtResource("11_recap")]
 
 [connection signal="pressed" from="HUD/Care/Feed" to="." method="_on_feed"]
 [connection signal="pressed" from="HUD/Care/Pick" to="." method="_on_pick"]

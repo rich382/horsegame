@@ -4,6 +4,9 @@ extends Node3D
 
 const Care := preload("res://src/care/care_system.gd")
 const Training := preload("res://src/training/training_system.gd")
+const ShowResolver := preload("res://src/show/show_resolver.gd")
+const CourseDefScript := preload("res://src/show/course_def.gd")
+const ClassDefScript := preload("res://src/show/class_def.gd")
 const STALL_POS := Vector3(-8.2, 0.0, -4.0)
 const PADDOCK_POS := Vector3(-10.5, 0.0, 3.6)
 const ARENA_POS := Vector3(6.5, 0.0, 2.0)
@@ -24,8 +27,10 @@ const Enums := preload("res://src/core/enums.gd")
 @onready var _shop: CanvasLayer = $Shop
 @onready var _school: CanvasLayer = $School
 @onready var _school_work: HBoxContainer = $HUD/SchoolWork
+@onready var _recap: CanvasLayer = $Recap
 
 var _session := false
+var _pending_recap = null
 
 
 func _ready() -> void:
@@ -261,14 +266,53 @@ func _on_school_picked(kind: int) -> void:
 			_school_work.visible = true
 		return
 	_hide_school_choices()
+	_pending_recap = null
+	if kind == Enums.TrainingKind.GYMNASTIC:
+		_pending_recap = _resolve_home_gym(gs)
 	var msg := Training.apply_session(_horse_state(), kind, gs.data)
+	if _pending_recap:
+		msg = _gym_toast(_pending_recap, _horse_state())
 	_on_toast(msg)
 	_refresh_sheet()
 	_session = true
 	_run_school_path(_school_steps(kind), 0, func() -> void:
 		_session = false
 		_refresh_clock()
+		if _pending_recap and _recap and _recap.has_method("open_result"):
+			_recap.open_result(_pending_recap)
+		_pending_recap = null
 	)
+
+
+func _resolve_home_gym(gs):
+	if gs == null or gs.sim_rng == null:
+		return null
+	var rider := 35.0
+	if gs.data and gs.data.player:
+		rider = float(gs.data.player.rider_skill)
+	var footing := 40.0
+	if gs.data:
+		footing = float(gs.data.farm.get("footing_quality", 40))
+	return ShowResolver.resolve_trip(
+		_horse_state(),
+		rider,
+		CourseDefScript.home_gym_080(),
+		ClassDefScript.home_gym(),
+		[],
+		footing,
+		gs.sim_rng
+	)
+
+
+func _gym_toast(result, horse) -> String:
+	var name := String(horse.name) if horse else "They"
+	if result == null:
+		return "Worked gymnastic."
+	if bool(result.eliminated):
+		return "%s had a stop they couldn't get past." % name
+	if int(result.faults) == 0:
+		return "Clean gymnastic. %s stayed in front of you." % name
+	return "Gymnastic: %d faults. Check the recap." % int(result.faults)
 
 
 func _school_steps(kind: int) -> Array:
