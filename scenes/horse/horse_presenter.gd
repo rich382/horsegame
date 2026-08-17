@@ -1,7 +1,8 @@
 extends Node3D
-## Textured free horse (skinned idle/walk/jump) with Quaternius FBX as fallback.
+## Hero pack (`hero.glb`) first, then the free skinned horse, then Quaternius.
 
 const Enums := preload("res://src/core/enums.gd")
+const HORSE_HERO := "res://assets/models/horse/hero.glb"
 const HORSE_GLB := "res://assets/models/horse/free_horse.glb"
 const HORSE_FBX := "res://assets/models/horse/Horse.fbx"
 const HORSE_OBJ := "res://assets/models/horse/Horse.obj"
@@ -112,7 +113,7 @@ func _coat_tint(coat: int) -> Color:
 
 
 func _instance_model() -> Node3D:
-	for path in [HORSE_GLB, HORSE_FBX, HORSE_OBJ]:
+	for path in [HORSE_HERO, HORSE_GLB, HORSE_FBX, HORSE_OBJ]:
 		if ResourceLoader.exists(path):
 			var packed = load(path)
 			if packed is PackedScene:
@@ -252,7 +253,7 @@ func _find_clip(want: String) -> String:
 	for name in _anim.get_animation_list():
 		var l := String(name).to_lower()
 		if want == "walk":
-			if "walkslow" in l:
+			if "walkslow" in l or "trot" in l or "canter" in l or "gallop" in l:
 				continue
 			if "walk" in l:
 				return name
@@ -260,6 +261,8 @@ func _find_clip(want: String) -> String:
 			if "jump" in l:
 				return name
 		elif want == "idle":
+			if "eat" in l or "graze" in l:
+				continue
 			if "idle" in l or "stand" in l:
 				return name
 		if fallback == "" and _anim.get_animation_list().size() > 0:

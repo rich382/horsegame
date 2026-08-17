@@ -6,6 +6,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 ### Changed
 
+- Art pipeline: AAA horse is a bought pack dropped as `assets/models/horse/hero.glb` (`docs/ART.md`). Homemade free-horse rig is the stand-in until then.
 - Farm horse uses the free textured GLB (decimated to 28k faces) with Idle / Walk / Jump. Quaternius FBX stays as fallback.
 - Meshy official plugin is enabled. Imported truck/trailer GLBs on the west drive replace the box stand-ins.
 - Playtest till: Play fills cash to $999,999 and shop/shows never bounce for money. F9 refills. New game turns it off.

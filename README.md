@@ -9,6 +9,7 @@ You run a small show barn: care for horses, school them at home, haul to the **A
 | Doc | Path |
 |---|---|
 | Design spec | [`docs/DESIGN.md`](docs/DESIGN.md) |
+| Art pipeline | [`docs/ART.md`](docs/ART.md) |
 | Changelog | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) |
 | Session logs | [`docs/log/`](docs/log/) |
 
