@@ -204,7 +204,7 @@ func buy_truck() -> String:
 	if not post(&"shop", -TRUCK_COST, "Used diesel"):
 		return "Can't cover the truck ($%d)." % TRUCK_COST
 	farm["has_truck"] = true
-	return "Keys on the hook. Needs a trailer."
+	return "Red truck is in the drive by the barn. Needs a trailer."
 
 
 func buy_trailer() -> String:
@@ -215,7 +215,7 @@ func buy_trailer() -> String:
 		return "Can't cover the trailer ($%d)." % TRAILER_COST
 	farm["has_trailer"] = true
 	farm["trailer_capacity"] = 2
-	return "Two-horse in the yard. Hitch it and go to work."
+	return "Two-horse is hitched in the drive, behind the truck."
 
 
 func buy_barn_wing() -> String:

@@ -35,6 +35,18 @@ static func run() -> int:
 	if not bool(farm.get("has_truck", false)) or not bool(farm.get("has_trailer", false)):
 		push_error("barn: truck/trailer not owned (%s / %s)" % [truck, trailer])
 		fails += 1
+	var yard_script = load("res://src/farm/farm_yard.gd")
+	if yard_script:
+		var yard: Node3D = yard_script.new()
+		root.add_child(yard)
+		yard.build(farm)
+		if yard.get_node_or_null("TruckCab") == null:
+			push_error("barn: truck mesh missing after build")
+			fails += 1
+		if yard.get_node_or_null("TrailerBox") == null:
+			push_error("barn: trailer mesh missing after build")
+			fails += 1
+		yard.queue_free()
 	var haul1: String = econ.do_haul("vet_run")
 	if not haul1.contains("Hauled"):
 		push_error("barn: haul with rig failed (%s)" % haul1)
