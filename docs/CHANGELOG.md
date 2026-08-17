@@ -6,6 +6,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 ### Changed
 
+- Farm horse uses the free textured GLB (decimated to 28k faces). Quaternius FBX stays as the animated fallback.
 - Meshy official plugin is enabled. Imported truck/trailer GLBs on the west drive replace the box stand-ins.
 - Playtest till: Play fills cash to $999,999 and shop/shows never bounce for money. F9 refills. New game turns it off.
 - Farm lot is 160 m on a side. Gravel drive and truck/trailer sit on a west entrance (~x = −42), linked by a lane along the barn — well clear of the east arena.

@@ -1,7 +1,8 @@
 extends Node3D
-## Quaternius 3D horse, planted on the grass. Coat tints the body mesh.
+## Textured free horse (static mesh) with Quaternius FBX as animated fallback.
 
 const Enums := preload("res://src/core/enums.gd")
+const HORSE_GLB := "res://assets/models/horse/free_horse.glb"
 const HORSE_FBX := "res://assets/models/horse/Horse.fbx"
 const HORSE_OBJ := "res://assets/models/horse/Horse.obj"
 const TARGET_HEIGHT := 2.05
@@ -19,6 +20,8 @@ var _jump_from: Vector3
 var _jump_to: Vector3
 var _jump_t := 0.0
 var _jump_dur := 0.8
+var _plant_y := 0.0
+var _bob_t := 0.0
 
 
 func is_busy() -> bool:
@@ -59,6 +62,7 @@ func setup(horse) -> void:
 		return
 	add_child(_body)
 	_normalize_and_plant(_body)
+	_plant_y = _body.position.y
 	_ensure_pick()
 	_anim = _find_anim(_body)
 	_play_locomotion(false)
@@ -70,7 +74,7 @@ func setup(horse) -> void:
 func apply_coat(coat: int) -> void:
 	if _body == null:
 		return
-	var body_color := _coat_color(coat)
+	var tint := _coat_tint(coat)
 	var mane := Color(0.07, 0.06, 0.05)
 	if coat == Enums.CoatColor.GREY:
 		mane = Color(0.78, 0.78, 0.80)
@@ -85,26 +89,30 @@ func apply_coat(coat: int) -> void:
 			var mat := StandardMaterial3D.new()
 			if src is StandardMaterial3D:
 				mat = (src as StandardMaterial3D).duplicate() as StandardMaterial3D
-			var base := mat.albedo_color
-			var lum := (base.r + base.g + base.b) / 3.0
-			mat.albedo_color = mane if lum < 0.12 else body_color
+			mat.emission_enabled = false
+			if mat.albedo_texture != null:
+				mat.albedo_color = tint
+			else:
+				var base := mat.albedo_color
+				var lum := (base.r + base.g + base.b) / 3.0
+				mat.albedo_color = mane if lum < 0.12 else tint
 			mi.set_surface_override_material(i, mat)
 
 
-func _coat_color(coat: int) -> Color:
+func _coat_tint(coat: int) -> Color:
 	match coat:
 		Enums.CoatColor.CHESTNUT:
-			return Color(0.58, 0.24, 0.10)
+			return Color(0.95, 0.52, 0.32)
 		Enums.CoatColor.GREY:
-			return Color(0.68, 0.68, 0.70)
+			return Color(0.80, 0.80, 0.84)
 		Enums.CoatColor.BLACK:
-			return Color(0.07, 0.07, 0.08)
+			return Color(0.18, 0.16, 0.16)
 		_:
-			return Color(0.34, 0.17, 0.08)
+			return Color(1.0, 1.0, 1.0)
 
 
 func _instance_model() -> Node3D:
-	for path in [HORSE_FBX, HORSE_OBJ]:
+	for path in [HORSE_GLB, HORSE_FBX, HORSE_OBJ]:
 		if ResourceLoader.exists(path):
 			var packed = load(path)
 			if packed is PackedScene:
@@ -170,9 +178,11 @@ func _process(dt: float) -> void:
 		global_position = here + delta.normalized() * step
 		_face(delta)
 		_play_locomotion(true)
+		_bob(dt, true)
 	else:
 		_has_goal = false
 		_play_locomotion(false)
+		_bob(dt, false)
 		_finish()
 
 
@@ -195,6 +205,17 @@ func _finish() -> void:
 	_pending = Callable()
 	if then.is_valid():
 		then.call()
+
+
+func _bob(dt: float, walking: bool) -> void:
+	if _body == null:
+		return
+	if walking and _anim == null:
+		_bob_t += dt
+		_body.position.y = _plant_y + 0.045 * sin(_bob_t * 10.0)
+	else:
+		_bob_t = 0.0
+		_body.position.y = _plant_y
 
 
 func _face(delta: Vector3) -> void:

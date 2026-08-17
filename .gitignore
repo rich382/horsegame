@@ -6,6 +6,9 @@
 .env
 .env.local
 
+# Raw Meshy / free-pack sources (keep only the decimated game mesh)
+assets/models/horse/free_horse_source.glb
+
 # OS
 Thumbs.db
 desktop.ini

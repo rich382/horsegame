@@ -3,6 +3,9 @@ extends RefCounted
 
 static func run() -> int:
 	var fails := 0
+	if not ResourceLoader.exists("res://assets/models/horse/free_horse.glb"):
+		push_error("horse presenter: free_horse.glb missing")
+		fails += 1
 	if not ResourceLoader.exists("res://assets/models/horse/Horse.fbx"):
 		push_error("horse presenter: Horse.fbx missing")
 		fails += 1
