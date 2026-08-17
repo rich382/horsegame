@@ -14,6 +14,9 @@ static func run() -> int:
 	cfg.debug_seed = 42
 	gs.new_game(cfg)
 	clock.advance_phase() ## Monday Morning → Afternoon
+	var saved_uid := String(gs.data.horses[0].uid)
+	var saved_hunger := float(gs.data.horses[0].hunger)
+	var saved_name := String(gs.data.horses[0].name)
 
 	var err: Error = saves.save_slot(9)
 	if err != OK:
@@ -39,6 +42,17 @@ static func run() -> int:
 	if gs.data.seed != 42:
 		push_error("save migrate: seed=%d want 42" % gs.data.seed)
 		fails += 1
+	if gs.data.horses.is_empty() or not (gs.data.horses[0] is Resource):
+		push_error("save migrate: horse did not round-trip as HorseState")
+		fails += 1
+	else:
+		var loaded = gs.data.horses[0]
+		if String(loaded.uid) != saved_uid or String(loaded.name) != saved_name:
+			push_error("save migrate: horse identity lost uid=%s name=%s" % [loaded.uid, loaded.name])
+			fails += 1
+		if abs(float(loaded.hunger) - saved_hunger) > 0.01:
+			push_error("save migrate: hunger=%s want %s" % [str(loaded.hunger), str(saved_hunger)])
+			fails += 1
 
 	var legacy := {"version": 0, "seed": 7}
 	var migrated: Dictionary = saves.migrate(legacy)

@@ -1,0 +1,10 @@
+description = "Harsh Livia's Stable product critic. Judges playable slice, art honesty, and tests. Does not implement."
+instructions_file = ".grok/agents/critic.md"
+reasoning_effort = "high"
+default_capability_mode = "execute"
+
+[[outputs]]
+name = "review_file"
+io_type = "file"
+required = true
+description = "docs/log/critic-report.md"

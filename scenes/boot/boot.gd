@@ -80,10 +80,14 @@ func _ready() -> void:
 	if next_b and not next_b.pressed.is_connected(_on_next_horse):
 		next_b.pressed.connect(_on_next_horse)
 	_refresh_clock()
-	var econ := get_node_or_null("/root/Economy")
-	if econ and econ.has_method("grant_playtest_cash"):
-		econ.grant_playtest_cash()
-	_on_toast("Playtest till is open. Name your horse, then buy whatever.")
+	if _session_named():
+		if _new_game:
+			_new_game.visible = false
+		_on_toast("Welcome back. Feed, school, shop when the loft runs low.")
+	else:
+		if _new_game:
+			_new_game.visible = true
+		_on_toast("Name your horse. Feed, school in the afternoon, shop when the loft runs low.")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -193,10 +197,18 @@ func _on_identity(horse_name: String, coat: int) -> void:
 		return
 	var HorseFactoryScript = load("res://src/horse/horse_factory.gd")
 	HorseFactoryScript.apply_player_identity(gs.data.horses[0], horse_name, coat)
+	gs.data.farm["identity_set"] = true
 	if _horse.has_method("setup"):
 		_horse.setup(gs.data.horses[0])
 	_refresh_clock()
 	_on_toast("%s is on the farm. Start with feed." % gs.data.horses[0].name)
+
+
+func _session_named() -> bool:
+	var gs := get_node_or_null("/root/GameState")
+	if gs == null or gs.data == null:
+		return false
+	return bool(gs.data.farm.get("identity_set", false))
 
 
 func _horse_state():
