@@ -4,6 +4,7 @@ extends CanvasLayer
 const Enums := preload("res://src/core/enums.gd")
 
 signal confirmed(horse_name: String, coat: int)
+signal coat_previewed(coat: int)
 
 var _coat: int = Enums.CoatColor.BAY
 
@@ -45,3 +46,4 @@ func _highlight() -> void:
 	$Panel/Coats/Chestnut.modulate = Color(1, 1, 1, 1 if _coat == Enums.CoatColor.CHESTNUT else 0.55)
 	$Panel/Coats/Grey.modulate = Color(1, 1, 1, 1 if _coat == Enums.CoatColor.GREY else 0.55)
 	$Panel/Coats/Black.modulate = Color(1, 1, 1, 1 if _coat == Enums.CoatColor.BLACK else 0.55)
+	coat_previewed.emit(_coat)

@@ -21,6 +21,7 @@ func _ready() -> void:
 	if not bus.clock_changed.is_connected(_refresh_clock):
 		bus.clock_changed.connect(_refresh_clock)
 	_new_game.confirmed.connect(_on_identity)
+	_new_game.coat_previewed.connect(_on_coat_preview)
 	_refresh_clock()
 	_on_toast("Name your horse, pick a coat, then look around the yard.")
 
@@ -93,6 +94,11 @@ func _spawn_horse() -> void:
 	_horse.rotation.y = 0.7
 	if _horse.has_method("setup"):
 		_horse.setup(horse)
+
+
+func _on_coat_preview(coat: int) -> void:
+	if _horse.has_method("apply_coat"):
+		_horse.apply_coat(coat)
 
 
 func _on_identity(horse_name: String, coat: int) -> void:

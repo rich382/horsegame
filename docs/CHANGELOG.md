@@ -10,8 +10,7 @@ All notable project changes. Session detail lives in [`docs/log/`](log/).
 
 ### Changed
 
-- Farm yard uses Kenney CC0 trees/fence plus painted grass, footing, barn wood, and roof.
-- Starter horse is the Quaternius CC0 farm horse, tinted by coat. New-game name + coat picker.
+- Farm and horse are Grok Imagine paintings (cutout sprites): shedrow barn, hunter jump, white fence, oak, four coats. Coat buttons preview live.
 
 ### Added
 
