@@ -1,97 +1,114 @@
 extends Node3D
-## Blender-rigged Imagine horse card. Coat swaps the albedo. Idle loops.
+## Quaternius 3D horse, planted on the grass. Coat tints the body mesh.
 
 const Enums := preload("res://src/core/enums.gd")
-const RIGGED := "res://assets/models/horse/horse_rigged.glb"
+const HORSE_FBX := "res://assets/models/horse/Horse.fbx"
+const HORSE_OBJ := "res://assets/models/horse/Horse.obj"
+const TARGET_HEIGHT := 2.05
 
-const SPRITES := {
-	Enums.CoatColor.BAY: preload("res://assets/sprites/horse_bay.png"),
-	Enums.CoatColor.CHESTNUT: preload("res://assets/sprites/horse_chestnut.png"),
-	Enums.CoatColor.GREY: preload("res://assets/sprites/horse_grey.png"),
-	Enums.CoatColor.BLACK: preload("res://assets/sprites/horse_black.png"),
-}
-
-var _rig: Node
-var _mesh: MeshInstance3D
+var _body: Node3D
 var _anim: AnimationPlayer
 
 
-func _process(_delta: float) -> void:
-	var cam := get_viewport().get_camera_3d()
-	if cam == null:
-		return
-	var here := global_position
-	var cam_xz := cam.global_position
-	cam_xz.y = here.y
-	## Mesh faces +Z. look_at aims -Z, so aim away from the camera.
-	var away := here + (here - cam_xz)
-	if away.distance_to(here) > 0.05:
-		look_at(away, Vector3.UP)
-
-
 func setup(horse) -> void:
-	_ensure_rig()
-	var coat := Enums.CoatColor.BAY
+	for c in get_children():
+		c.queue_free()
+	_body = _instance_model()
+	if _body == null:
+		return
+	add_child(_body)
+	_normalize_and_plant(_body)
+	_anim = _find_anim(_body)
+	_play_idle()
 	if horse != null:
-		coat = int(horse.coat)
-	apply_coat(coat)
-	_play("idle")
+		apply_coat(int(horse.coat))
 
 
 func apply_coat(coat: int) -> void:
-	_ensure_rig()
-	if _mesh == null:
+	if _body == null:
 		return
-	var tex: Texture2D = SPRITES.get(coat, SPRITES[Enums.CoatColor.BAY])
-	var mat := StandardMaterial3D.new()
-	mat.albedo_texture = tex
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-	mat.alpha_scissor_threshold = 0.42
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mat.roughness = 0.85
-	_mesh.set_surface_override_material(0, mat)
+	var body_color := _coat_color(coat)
+	var mane := Color(0.07, 0.06, 0.05)
+	if coat == Enums.CoatColor.GREY:
+		mane = Color(0.78, 0.78, 0.80)
+	elif coat == Enums.CoatColor.CHESTNUT:
+		mane = Color(0.22, 0.10, 0.05)
+	for mi in _meshes(_body):
+		var count := mi.get_surface_override_material_count()
+		if count == 0 and mi.mesh:
+			count = mi.mesh.get_surface_count()
+		for i in count:
+			var src: Material = mi.get_active_material(i)
+			var mat := StandardMaterial3D.new()
+			if src is StandardMaterial3D:
+				mat = (src as StandardMaterial3D).duplicate() as StandardMaterial3D
+			var base := mat.albedo_color
+			var lum := (base.r + base.g + base.b) / 3.0
+			mat.albedo_color = mane if lum < 0.12 else body_color
+			mi.set_surface_override_material(i, mat)
 
 
-func play_walk() -> void:
-	_play("walk")
+func _coat_color(coat: int) -> Color:
+	match coat:
+		Enums.CoatColor.CHESTNUT:
+			return Color(0.58, 0.24, 0.10)
+		Enums.CoatColor.GREY:
+			return Color(0.68, 0.68, 0.70)
+		Enums.CoatColor.BLACK:
+			return Color(0.07, 0.07, 0.08)
+		_:
+			return Color(0.34, 0.17, 0.08)
 
 
-func play_idle() -> void:
-	_play("idle")
+func _instance_model() -> Node3D:
+	for path in [HORSE_FBX, HORSE_OBJ]:
+		if ResourceLoader.exists(path):
+			var packed = load(path)
+			if packed is PackedScene:
+				var n = packed.instantiate()
+				if n is Node3D:
+					return n
+	return null
 
 
-func _ensure_rig() -> void:
-	if _rig and is_instance_valid(_rig):
+func _normalize_and_plant(root: Node3D) -> void:
+	var aabb := _world_aabb(root)
+	if aabb.size.y < 0.01:
 		return
-	for c in get_children():
-		c.queue_free()
-	if not ResourceLoader.exists(RIGGED):
-		return
-	var packed = load(RIGGED)
-	if packed == null:
-		return
-	_rig = packed.instantiate()
-	add_child(_rig)
-	_mesh = _find_mesh(_rig)
-	_anim = _find_anim(_rig)
+	var s := TARGET_HEIGHT / aabb.size.y
+	root.scale *= s
+	aabb = _world_aabb(root)
+	root.position.y -= aabb.position.y
 
 
-func _play(clip: String) -> void:
+func _world_aabb(root: Node3D) -> AABB:
+	var aabb := AABB()
+	var first := true
+	for mi in _meshes(root):
+		var local := mi.get_aabb()
+		var xf := mi.global_transform if mi.is_inside_tree() else root.transform * mi.transform
+		var world := xf * local
+		if first:
+			aabb = world
+			first = false
+		else:
+			aabb = aabb.merge(world)
+	return aabb
+
+
+func _play_idle() -> void:
 	if _anim == null:
 		return
-	if _anim.has_animation(clip):
-		_anim.play(clip)
-		_anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
-
-
-func _find_mesh(n: Node) -> MeshInstance3D:
-	if n is MeshInstance3D:
-		return n
-	for c in n.get_children():
-		var found := _find_mesh(c)
-		if found:
-			return found
-	return null
+	for name in _anim.get_animation_list():
+		var l := String(name).to_lower()
+		if "idle" in l or "stand" in l:
+			_anim.play(name)
+			if _anim.has_animation(name):
+				_anim.get_animation(name).loop_mode = Animation.LOOP_LINEAR
+			return
+	if _anim.get_animation_list().size() > 0:
+		var first: String = _anim.get_animation_list()[0]
+		_anim.play(first)
 
 
 func _find_anim(n: Node) -> AnimationPlayer:
@@ -102,3 +119,12 @@ func _find_anim(n: Node) -> AnimationPlayer:
 		if found:
 			return found
 	return null
+
+
+func _meshes(n: Node) -> Array[MeshInstance3D]:
+	var out: Array[MeshInstance3D] = []
+	if n is MeshInstance3D:
+		out.append(n)
+	for c in n.get_children():
+		out.append_array(_meshes(c))
+	return out

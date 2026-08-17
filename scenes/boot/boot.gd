@@ -90,8 +90,8 @@ func _spawn_horse() -> void:
 	var horse = null
 	if gs.data and gs.data.horses.size() > 0:
 		horse = gs.data.horses[0]
-	_horse.position = Vector3(-8.0, 0.03, 2.5)
-	_horse.rotation.y = 0.7
+	_horse.position = Vector3(-8.0, 0.0, 2.2)
+	_horse.rotation.y = 0.5
 	if _horse.has_method("setup"):
 		_horse.setup(horse)
 

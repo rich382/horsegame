@@ -33,7 +33,7 @@ Headless smoke:
 godot --headless --path . --quit-after 2
 ```
 
-Press **Play (F5)** in Godot. Name the horse, pick a coat, then look around the farm. The painted horse idles on a Blender 2D rig.
+Press **Play (F5)** in Godot. Name the horse, pick a coat, then orbit the **3D** barn, jumps, and fence. The horse is a 3D mesh (coat tint).
 
 - **Left-drag** to orbit, **mouse wheel** to zoom
 - **Next Phase** / **N** advances Morning → Afternoon → Evening
